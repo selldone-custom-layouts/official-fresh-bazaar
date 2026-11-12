@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/screenshots/hero.jpg" alt="Left: the bazaar as it renders in your browser today. Right: the same frame as a photograph would show it, the goal of this project." width="100%">
+  <img src="docs/screenshots/hero.jpg" alt="The bazaar as it renders live in your browser today" width="100%">
 </p>
 
 <h1 align="center">Old Bazaar 3D</h1>
@@ -37,11 +37,11 @@
 
 The picture above is the whole idea of this project.
 
-- **Left:** what runs in your browser today. A real-time 3D scene: three.js, a photographed HDR sky, photo-scanned materials and produce, motion-captured people, all at 60 frames a second on an ordinary laptop or phone.
-- **Right:** the same frame as a photograph would show it. That is the target.
+- **Today:** what runs in your browser right now. A real-time 3D scene: three.js, a photographed HDR sky, photo-scanned materials and produce, motion-captured people, all at 60 frames a second on an ordinary laptop or phone.
+- **The goal:** the same frame, indistinguishable from a photograph of a real bazaar.
 
-**How far can AI and 3D engines go, and how fast, until the bazaar on the left *is* the bazaar on the right?**
-We rebuild the scene with every new AI model, Claude and Codex, and keep each result. The gap between the two halves is the benchmark.
+**How far can AI and 3D engines go, and how fast, until a screenshot of this bazaar *is* a photograph?**
+We rebuild the scene with every new AI model, Claude and Codex, and keep each result. The gap between the render and a photograph is the benchmark.
 
 ## This is a real shop
 
