@@ -17,3 +17,7 @@ yarn-error.log*
 *.sln
 *.sw?
 /Backend/bootstrap/cache/
+
+# Selldone Layout upload archive (scripts/layout-package.mjs)
+/dist.zip
+/dist.zip.tmp

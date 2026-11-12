@@ -7,8 +7,12 @@
   "description": "This is Selldone open-source storefront project, offering developers the tools to create fully customized and professional websites using pre-built components and open-sourced SDKs.",
   "scripts": {
     "serve": "vite --force",
-    "build-production": "vite build",
-    "setup": "node ./setup.mjs"
+    "build-production": "vite build && node scripts/layout-postbuild.mjs",
+    "setup": "node ./setup.mjs",
+    "layout:check": "node scripts/layout-postbuild.mjs --check",
+    "layout:package": "node scripts/layout-package.mjs",
+    "layout:release": "npm run build-production && npm run layout:package",
+    "layout:deploy": "node scripts/layout-deploy.mjs"
   },
   "repository": {
     "type": "git",

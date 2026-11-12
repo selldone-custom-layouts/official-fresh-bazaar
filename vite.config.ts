@@ -18,6 +18,13 @@ import path from "path";
 import fs from "fs";
 import vitePluginRequire from "vite-plugin-require";
 import basicSsl from "@vitejs/plugin-basic-ssl";
+import {
+  baseName,
+  layoutChunks,
+  layoutInlineLimit,
+  safeName,
+  selldoneLayoutPlugins,
+} from "./scripts/selldone-layout-vite";
 
 const manifest = require("./manifest.json");
 
@@ -57,10 +64,14 @@ export default ({mode}: any) => {
       !!env.VITE_APP_DEV_SERVER_HTTPS && env.VITE_APP_DEV_SERVER_HTTPS === "TRUE";
 
   // Calculate base URL
+  // Production references are relative: every lazy chunk and asset resolves
+  // against the address shop.js and shop.css are actually served from. The
+  // Layout service stores each upload as layouts/<id>/releases/<ULID>/app and
+  // serves it from wherever the storefront host decides, so an absolute
+  // <deploy_server>/<package>/<version>/ base would point at an address that
+  // never exists. (scripts/selldone-layout-vite.ts explains the other rules.)
   const baseURL = IS_PRODUCTION
-      ? fixPath(
-          `${manifest.deploy_server}/${manifest.deploy_path}/${manifest.package}/${manifest.version}`,
-      )
+      ? "./"
       : `${IS_HTTPS ? "https" : "http"}://${DEV_HOST}:${DEV_PORT}/`;
 
   console.log("Build base URL:", baseURL);
@@ -76,6 +87,9 @@ export default ({mode}: any) => {
 
       //@ts-ignore
       vitePluginRequire.default(),
+      // Build-only: flags from CDN, WOFF2-only fonts, "use strict"; prefix,
+      // and the chunk-graph check (no ../shop.js imports, no cycles).
+      ...selldoneLayoutPlugins(),
       ...(IS_HTTPS
           ? [
             basicSsl({name: "selldone-test-cert"}), // Enable if you want to use https
@@ -119,24 +133,36 @@ export default ({mode}: any) => {
 
     build: {
       outDir: "dist/",
+      // Fewer files: Selldone extracts the ZIP inside the upload request
+      // (~100 s); ~714 files were cut off and burned the version. Small SVG
+      // and PNG icons are inlined; 3D assets (.bin, textures, .hdr) stay files.
+      assetsInlineLimit: layoutInlineLimit,
+      // One stylesheet (app/shop.css) instead of one per lazy chunk.
+      cssCodeSplit: false,
       rollupOptions: {
         input: {
           shop: "index.html",
         },
         // Selldone Layout artifact contract (selldone/cli artifact-contract.md):
-        // dist/app/shop.js + dist/app/shop.css (+ app/js, app/css, app/assets). Selldone serves the ZIP
-        // under https://layouts.selldone.com/<package>/<version>/, which is the build base above.
+        // dist/app/shop.js + dist/app/shop.css (+ app/js, app/assets). Every
+        // ZIP member lives under app/ (scripts/layout-postbuild.mjs removes
+        // dist/index.html, which the Layout host never uses).
         output: {
+          // Entry keeps only itself, shared code in "core", lazy code in a
+          // few groups; no chunk imports ../shop.js (see layoutChunks).
+          manualChunks: layoutChunks,
           entryFileNames: `app/[name].js`,
-          chunkFileNames: `app/js/[name].[hash].js`,
+          chunkFileNames: (chunk) => `app/js/${safeName(chunk.name)}.[hash].js`,
           assetFileNames: (assetInfo) => {
             const name = (assetInfo as any).names?.[0] || assetInfo.name || "";
             if (name.endsWith(".css")) {
-              return ["shop.css", "index.css"].includes(name)
+              // With cssCodeSplit off Vite names the one stylesheet
+              // style.css/index.css; the Layout runtime loads app/shop.css.
+              return ["shop.css", "index.css", "style.css"].includes(name)
                   ? `app/shop.css`
-                  : `app/css/[name].[hash].[ext]`;
+                  : `app/css/${safeName(baseName(name))}.[hash].[ext]`;
             }
-            return `app/assets/[name].[hash].[ext]`;
+            return `app/assets/${safeName(baseName(name))}.[hash].[ext]`;
           },
         },
       },
