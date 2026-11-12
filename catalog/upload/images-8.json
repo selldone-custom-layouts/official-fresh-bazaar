@@ -1,0 +1,37 @@
+[
+ {
+  "key": "potato",
+  "product_id": 739778,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/potato.txt"
+ },
+ {
+  "key": "onion",
+  "product_id": 739779,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/onion.txt"
+ },
+ {
+  "key": "red-onion",
+  "product_id": 739780,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/red-onion.txt"
+ },
+ {
+  "key": "garlic",
+  "product_id": 739781,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/garlic.txt"
+ },
+ {
+  "key": "radish",
+  "product_id": 739782,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/radish.txt"
+ },
+ {
+  "key": "ginger",
+  "product_id": 739783,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/ginger.txt"
+ },
+ {
+  "key": "pumpkin",
+  "product_id": 739784,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/pumpkin.txt"
+ }
+]

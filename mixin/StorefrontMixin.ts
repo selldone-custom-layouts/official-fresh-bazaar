@@ -1000,8 +1000,9 @@ const StorefrontMixin = defineComponent({
     getCustomHomePage() {
       const CUSTOM_HOME = SetupService.GetMetaValue("custom-home"); // Address for shop page! null or shop
 
+      // 🍎 Fresh Market 3D: the shop home (and a landing-page home) is the 3D market.
       return CUSTOM_HOME === Shop.Home.SHOP // CUSTOM_HOME -> shop
-        ? null
+        ? "Market3DPage"
         : CUSTOM_HOME === Shop.Home.BLOG
           ? window.$storefront.routes.BLOGS_PAGE
           : CUSTOM_HOME === Shop.Home.AVOCADO
@@ -1013,8 +1014,8 @@ const StorefrontMixin = defineComponent({
                 : CUSTOM_HOME === Shop.Home.MAP
                   ? window.$storefront.routes.MAP_PRODUCTS_PAGE
                   : CUSTOM_HOME
-                    ? window.$storefront.routes.CUSTOM_HOME_PAGE // CUSTOM_HOME -> Page ID
-                    : null;
+                    ? "Market3DPage" // CUSTOM_HOME -> Page ID (landing stays at /home)
+                    : "Market3DPage";
     },
 
     //――――――――――――――――――――――――― Coupon ―――――――――――――――――――――――――

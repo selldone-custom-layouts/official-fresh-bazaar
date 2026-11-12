@@ -123,18 +123,20 @@ export default ({mode}: any) => {
         input: {
           shop: "index.html",
         },
+        // Selldone Layout artifact contract (selldone/cli artifact-contract.md):
+        // dist/app/shop.js + dist/app/shop.css (+ app/js, app/css, app/assets). Selldone serves the ZIP
+        // under https://layouts.selldone.com/<package>/<version>/, which is the build base above.
         output: {
-          // Entry and chunk naming patterns
-          entryFileNames: `${VERSION_DIR}/[name].js`,
-          chunkFileNames: `${VERSION_DIR}/js/[name].[hash].js`,
-          // For assets
+          entryFileNames: `app/[name].js`,
+          chunkFileNames: `app/js/[name].[hash].js`,
           assetFileNames: (assetInfo) => {
-            if (assetInfo!.name!.endsWith(".css")) {
-              return ["shop.css"].includes(assetInfo.name!)
-                  ? `${VERSION_DIR}/[name].[ext]`
-                  : `${VERSION_DIR}/css/[name].[hash].[ext]`;
+            const name = (assetInfo as any).names?.[0] || assetInfo.name || "";
+            if (name.endsWith(".css")) {
+              return ["shop.css", "index.css"].includes(name)
+                  ? `app/shop.css`
+                  : `app/css/[name].[hash].[ext]`;
             }
-            return `${VERSION_DIR}/assets/[name].[hash].[ext]`;
+            return `app/assets/[name].[hash].[ext]`;
           },
         },
       },
@@ -144,7 +146,9 @@ export default ({mode}: any) => {
 };
 
 function fixPath(str: string) {
-  return str.replace(/\/{2,}/g, "/");
+  // Collapse duplicate slashes but keep the protocol's "//" (e.g. https://).
+  const out = str.replace(/([^:]\/)\/+/g, "$1");
+  return out.endsWith("/") ? out : out + "/";
 }
 
 function printDevServerConfig() {

@@ -1,0 +1,10 @@
+Photo-scanned materials and HDR sky — Poly Haven (https://polyhaven.com), licensed CC0 (public domain).
+
+  brick_floor              herringbone brick paving (plaza floor)
+  brown_brick_02           tan brick (arcade facades, dome base, minarets)
+  clay_plaster             straw-and-mud plaster (arch recesses, arcade ceiling)
+  weathered_brown_planks   weathered wood (stall stands)
+  marble_01                cream marble (pool rim, curb)
+  kiara_6_afternoon        HDR sky: lighting, reflections and the visible sky
+
+Re-encoded at 512–1024 px for the web. No attribution is required by CC0; credited with thanks.

@@ -1,0 +1,114 @@
+{
+  "shop": {
+    "title": "Fresh Market",
+    "title_fa": "بازار تازه",
+    "description": "Farm-fresh fruit, vegetables and herbs, picked at their best and delivered to your door. Walk our 3D open-air market, pick from the crates and fill your basket.",
+    "description_fa": "میوه، سبزی و صیفی تازه از مزرعه، در بهترین زمان برداشت و تحویل درب منزل. در بازارچه سه‌بعدی ما قدم بزنید، از جعبه‌ها انتخاب کنید و سبدتان را پر کنید.",
+    "icon": "catalog/brand/logo.png"
+  },
+  "currency_note": "price_usd is the reference price per unit; convert to the shop currency when creating products.",
+  "categories": [
+    {
+      "key": "orchard",
+      "title": "Orchard Fruits",
+      "title_fa": "میوه‌های باغی",
+      "products": [
+        { "key": "red-apple", "title": "Red Apple", "title_fa": "سیب قرمز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.4, "kind": "apple-red" },
+        { "key": "green-apple", "title": "Green Apple", "title_fa": "سیب سبز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.6, "kind": "apple-green" },
+        { "key": "pear", "title": "Pear", "title_fa": "گلابی", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.9, "kind": "pear" },
+        { "key": "peach", "title": "Peach", "title_fa": "هلو", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.6, "kind": "stone-peach" },
+        { "key": "apricot", "title": "Apricot", "title_fa": "زردآلو", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 5.2, "kind": "stone-apricot" },
+        { "key": "plum", "title": "Plum", "title_fa": "آلو", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.4, "kind": "stone-plum" },
+        { "key": "cherry", "title": "Sweet Cherry", "title_fa": "گیلاس", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 8.9, "kind": "cherry-sweet" },
+        { "key": "fig", "title": "Fresh Fig", "title_fa": "انجیر تازه", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 9.5, "kind": "fig" }
+      ]
+    },
+    {
+      "key": "citrus",
+      "title": "Citrus & Tropical",
+      "title_fa": "مرکبات و استوایی",
+      "products": [
+        { "key": "orange", "title": "Orange", "title_fa": "پرتقال", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 2.8, "kind": "citrus-orange" },
+        { "key": "tangerine", "title": "Tangerine", "title_fa": "نارنگی", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.2, "kind": "citrus-tangerine" },
+        { "key": "lemon", "title": "Lemon", "title_fa": "لیمو", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.2, "kind": "citrus-lemon" },
+        { "key": "lime", "title": "Lime", "title_fa": "لیمو ترش", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.8, "kind": "citrus-lime" },
+        { "key": "banana", "title": "Banana", "title_fa": "موز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 2.2, "kind": "banana-ripe" },
+        { "key": "pineapple", "title": "Pineapple", "title_fa": "آناناس", "unit": "piece", "unit_fa": "عدد", "price_usd": 4.5, "kind": "pineapple" },
+        { "key": "mango", "title": "Mango", "title_fa": "انبه", "unit": "piece", "unit_fa": "عدد", "price_usd": 2.4, "kind": "mango" },
+        { "key": "kiwi", "title": "Kiwi", "title_fa": "کیوی", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.1, "kind": "kiwi" }
+      ]
+    },
+    {
+      "key": "berries",
+      "title": "Berries & Melons",
+      "title_fa": "توت‌ها و جالیزی",
+      "products": [
+        { "key": "strawberry", "title": "Strawberry", "title_fa": "توت فرنگی", "unit": "box", "unit_fa": "جعبه", "price_usd": 4.9, "kind": "strawberry" },
+        { "key": "red-grapes", "title": "Red Grapes", "title_fa": "انگور قرمز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 5.4, "kind": "grapes-purple" },
+        { "key": "green-grapes", "title": "Green Grapes", "title_fa": "انگور سبز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 5.2, "kind": "grapes-green" },
+        { "key": "pomegranate", "title": "Pomegranate", "title_fa": "انار", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 4.7, "kind": "pomegranate" },
+        { "key": "watermelon", "title": "Watermelon", "title_fa": "هندوانه", "unit": "piece", "unit_fa": "عدد", "price_usd": 6.5, "kind": "watermelon" },
+        { "key": "cantaloupe", "title": "Cantaloupe", "title_fa": "طالبی", "unit": "piece", "unit_fa": "عدد", "price_usd": 3.9, "kind": "melon-cantaloupe" },
+        { "key": "avocado", "title": "Avocado", "title_fa": "آووکادو", "unit": "piece", "unit_fa": "عدد", "price_usd": 1.6, "kind": "avocado-hass" }
+      ]
+    },
+    {
+      "key": "garden",
+      "title": "Garden Vegetables",
+      "title_fa": "صیفی‌جات",
+      "products": [
+        { "key": "tomato", "title": "Tomato", "title_fa": "گوجه فرنگی", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.1, "kind": "tomato-red" },
+        { "key": "cucumber", "title": "Cucumber", "title_fa": "خیار", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 2.4, "kind": "cucumber" },
+        { "key": "zucchini", "title": "Zucchini", "title_fa": "کدو سبز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 2.9, "kind": "cucumber-zucchini" },
+        { "key": "eggplant", "title": "Eggplant", "title_fa": "بادمجان", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.0, "kind": "eggplant" },
+        { "key": "red-pepper", "title": "Red Bell Pepper", "title_fa": "فلفل دلمه قرمز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 5.6, "kind": "pepper-red" },
+        { "key": "yellow-pepper", "title": "Yellow Bell Pepper", "title_fa": "فلفل دلمه زرد", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 5.6, "kind": "pepper-yellow" },
+        { "key": "green-pepper", "title": "Green Bell Pepper", "title_fa": "فلفل دلمه سبز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 3.8, "kind": "pepper-green" },
+        { "key": "chili", "title": "Red Chili", "title_fa": "فلفل تند قرمز", "unit": "100 g", "unit_fa": "۱۰۰ گرم", "price_usd": 1.2, "kind": "chili-red" }
+      ]
+    },
+    {
+      "key": "roots",
+      "title": "Roots & Bulbs",
+      "title_fa": "ریشه‌ای و غده‌ای",
+      "products": [
+        { "key": "carrot", "title": "Carrot", "title_fa": "هویج", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 1.9, "kind": "carrot" },
+        { "key": "potato", "title": "Potato", "title_fa": "سیب زمینی", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 1.5, "kind": "potato" },
+        { "key": "onion", "title": "Yellow Onion", "title_fa": "پیاز زرد", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 1.4, "kind": "onion-yellow" },
+        { "key": "red-onion", "title": "Red Onion", "title_fa": "پیاز قرمز", "unit": "kg", "unit_fa": "کیلوگرم", "price_usd": 1.8, "kind": "onion-red" },
+        { "key": "garlic", "title": "Garlic", "title_fa": "سیر", "unit": "250 g", "unit_fa": "۲۵۰ گرم", "price_usd": 1.9, "kind": "onion-garlic" },
+        { "key": "radish", "title": "Radish Bunch", "title_fa": "تربچه", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.6, "kind": "radish" },
+        { "key": "ginger", "title": "Ginger", "title_fa": "زنجبیل تازه", "unit": "250 g", "unit_fa": "۲۵۰ گرم", "price_usd": 2.6, "kind": "potato-ginger" },
+        { "key": "pumpkin", "title": "Pumpkin", "title_fa": "کدو حلوایی", "unit": "piece", "unit_fa": "عدد", "price_usd": 5.5, "kind": "pumpkin" }
+      ]
+    },
+    {
+      "key": "greens",
+      "title": "Leafy Greens",
+      "title_fa": "سبزیجات برگی",
+      "products": [
+        { "key": "cabbage", "title": "Cabbage", "title_fa": "کلم", "unit": "piece", "unit_fa": "عدد", "price_usd": 2.3, "kind": "cabbage" },
+        { "key": "lettuce", "title": "Lettuce", "title_fa": "کاهو", "unit": "piece", "unit_fa": "عدد", "price_usd": 1.8, "kind": "cabbage-lettuce" },
+        { "key": "broccoli", "title": "Broccoli", "title_fa": "کلم بروکلی", "unit": "piece", "unit_fa": "عدد", "price_usd": 2.6, "kind": "broccoli" },
+        { "key": "cauliflower", "title": "Cauliflower", "title_fa": "گل کلم", "unit": "piece", "unit_fa": "عدد", "price_usd": 3.1, "kind": "broccoli-cauliflower" },
+        { "key": "corn", "title": "Sweet Corn", "title_fa": "ذرت شیرین", "unit": "piece", "unit_fa": "عدد", "price_usd": 0.9, "kind": "corn" },
+        { "key": "mushroom", "title": "White Mushroom", "title_fa": "قارچ", "unit": "250 g", "unit_fa": "۲۵۰ گرم", "price_usd": 2.4, "kind": "mushroom" },
+        { "key": "leek", "title": "Leek", "title_fa": "تره فرنگی", "unit": "piece", "unit_fa": "عدد", "price_usd": 1.3, "kind": "leek" },
+        { "key": "celery", "title": "Celery", "title_fa": "کرفس", "unit": "bunch", "unit_fa": "دسته", "price_usd": 2.2, "kind": "leek-celery" }
+      ]
+    },
+    {
+      "key": "herbs",
+      "title": "Fresh Herbs",
+      "title_fa": "سبزی تازه",
+      "products": [
+        { "key": "parsley", "title": "Parsley", "title_fa": "جعفری", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.1, "kind": "herbs-parsley" },
+        { "key": "mint", "title": "Mint", "title_fa": "نعناع", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.2, "kind": "herbs-mint" },
+        { "key": "basil", "title": "Basil", "title_fa": "ریحان", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.4, "kind": "herbs-basil" },
+        { "key": "spinach", "title": "Spinach", "title_fa": "اسفناج", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.9, "kind": "herbs-spinach" },
+        { "key": "dill", "title": "Dill", "title_fa": "شوید", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.1, "kind": "herbs-dill" },
+        { "key": "cilantro", "title": "Cilantro", "title_fa": "گشنیز", "unit": "bunch", "unit_fa": "دسته", "price_usd": 1.1, "kind": "herbs-parsley" }
+      ]
+    }
+  ]
+}

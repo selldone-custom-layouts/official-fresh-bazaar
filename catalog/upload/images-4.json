@@ -1,0 +1,37 @@
+[
+ {
+  "key": "lettuce",
+  "product_id": 739752,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/lettuce.txt"
+ },
+ {
+  "key": "broccoli",
+  "product_id": 739760,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/broccoli.txt"
+ },
+ {
+  "key": "cauliflower",
+  "product_id": 739761,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/cauliflower.txt"
+ },
+ {
+  "key": "corn",
+  "product_id": 739762,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/corn.txt"
+ },
+ {
+  "key": "mushroom",
+  "product_id": 739763,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/mushroom.txt"
+ },
+ {
+  "key": "leek",
+  "product_id": 739764,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/leek.txt"
+ },
+ {
+  "key": "celery",
+  "product_id": 739765,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/celery.txt"
+ }
+]

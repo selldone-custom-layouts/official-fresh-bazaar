@@ -30,6 +30,23 @@ import StorefrontLayout from "../layouts/StorefrontLayout.vue";
 import StorefrontPageLanding from "@app-storefront/pages/landing/StorefrontPageLanding.vue";
 
 import StorefrontPageLogin from "@app-storefront/pages/login/StorefrontPageLogin.vue";
+//――――――――――――――――――――――――― 🍎 Fresh Market 3D ―――――――――――――――――――――――――
+// The layout's home: a walkable 3D market where stalls are categories and crates are products.
+const StorefrontPageMarket3D = () => import("../pages/market/StorefrontPageMarket3D.vue");
+export const MARKET_3D_PAGE = "Market3DPage";
+
+function market3DRoute(): IVueRoute {
+  return {
+    path: "",
+    name: MARKET_3D_PAGE,
+    component: StorefrontPageMarket3D,
+    meta: {
+      fullscreen: true,
+      market3d: true,
+    },
+  };
+}
+
 //――――――――――――――――――――――――― Shop ―――――――――――――――――――――――――
 const StorefrontPageProducts = () =>
     import( "../pages/products/StorefrontPageProducts.vue");
@@ -308,14 +325,7 @@ function getRouteForHome(): IVueRoute {
       };
     /*▃▃▃▃▃▃▃▃▃▃▃ Home ➤ Shop ▃▃▃▃▃▃▃▃▃▃▃*/
     case Shop.Home.SHOP:
-      return {
-        path: "",
-        name: StorefrontRoutesName.SHOP_PAGE,
-        component: StorefrontPageProducts,
-        meta: {
-          search: true,
-        },
-      };
+      return market3DRoute();
     /*▃▃▃▃▃▃▃▃▃▃▃ Home ➤ Map ▃▃▃▃▃▃▃▃▃▃▃*/
     case Shop.Home.MAP:
       return {
@@ -328,27 +338,9 @@ function getRouteForHome(): IVueRoute {
       };
 
     default:
-      /*▃▃▃▃▃▃▃▃▃▃▃ Home ➤ Landing Page ▃▃▃▃▃▃▃▃▃▃▃*/
-      if (Shop.Home.LANDING_PAGE)
-        // Landing page ID!
-        return {
-          path: "",
-          name: StorefrontRoutesName.CUSTOM_HOME_PAGE, // Landing page loader!
-          component: StorefrontPageLanding,
-          meta: {
-            fullscreen: true,
-          },
-        };
-
-      /*▃▃▃▃▃▃▃▃▃▃▃ Home ➤ Default (Shop) ▃▃▃▃▃▃▃▃▃▃▃*/
-      return {
-        path: "",
-        name: StorefrontRoutesName.SHOP_PAGE,
-        component: StorefrontPageProducts,
-        meta: {
-          search: true,
-        },
-      };
+      /*▃▃▃▃▃▃▃▃▃▃▃ Home ➤ 🍎 Fresh Market 3D (shop / landing / default) ▃▃▃▃▃▃▃▃▃▃▃*/
+      // Landing pages stay reachable at /pages/:page_name; the classic listing lives at /shop.
+      return market3DRoute();
   }
 }
 
@@ -372,6 +364,16 @@ const routes: IVueRoute[] = [
       // + Add new pages on shop.js > getCustomHomePage & GetDomainHomeIcon & GetDomainHomeName
       getRouteForHome(),
 
+      // ▶ ▶ ⬬⬬⬬⬬⬬⬬⬬⬬ Custom landing home (kept reachable while / is the 3D market) ⬬⬬⬬⬬⬬⬬⬬⬬
+      {
+        path: "home",
+        name: StorefrontRoutesName.CUSTOM_HOME_PAGE,
+        component: StorefrontPageLanding,
+        meta: {
+          fullscreen: true,
+        },
+      },
+
       // ▶ ▶ ⬬⬬⬬⬬⬬⬬⬬⬬ Login ⬬⬬⬬⬬⬬⬬⬬⬬
       {
         path: "welcome",
@@ -385,7 +387,7 @@ const routes: IVueRoute[] = [
         // Order important! first route to ShopPage consider as ShopPage!
         path: "shop",
         name:
-          StorefrontRoutesName.SHOP_PAGE + (CUSTOM_HOME===Shop.Home.SHOP?'-reserve':''),
+          StorefrontRoutesName.SHOP_PAGE, // Home is the 3D market, so /shop is always the classic listing.
         component: StorefrontPageProducts,
         meta: {
           search: true,

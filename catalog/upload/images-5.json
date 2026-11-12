@@ -1,0 +1,32 @@
+[
+ {
+  "key": "parsley",
+  "product_id": 739766,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/parsley.txt"
+ },
+ {
+  "key": "mint",
+  "product_id": 739767,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/mint.txt"
+ },
+ {
+  "key": "basil",
+  "product_id": 739768,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/basil.txt"
+ },
+ {
+  "key": "spinach",
+  "product_id": 739769,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/spinach.txt"
+ },
+ {
+  "key": "dill",
+  "product_id": 739770,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/dill.txt"
+ },
+ {
+  "key": "cilantro",
+  "product_id": 739772,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/cilantro.txt"
+ }
+]

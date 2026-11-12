@@ -1,10 +1,10 @@
 {
   "deploy_server": "https://layouts.selldone.com",
   "deploy_path": "",
-  "package": "sample-custom-storefront",
-  "name": "My Storefront",
-  "version": "0.0.22",
+  "package": "fresh-market-3d-storefront",
+  "name": "Fresh Market 3D — Open-air Market",
+  "version": "1.0.0",
   "storefront": true,
   "backoffice": false,
-  "description": null
+  "description": "A walkable, photoreal 3D open-air market for Selldone. Every category is a stall and every product a crate of procedurally modelled produce; shoppers inspect products in a studio turntable and add them to the real Selldone basket. Works on any shop."
 }

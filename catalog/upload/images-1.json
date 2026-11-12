@@ -1,0 +1,37 @@
+[
+ {
+  "key": "carrot",
+  "product_id": 739732,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/carrot.txt"
+ },
+ {
+  "key": "cabbage",
+  "product_id": 739733,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/cabbage.txt"
+ },
+ {
+  "key": "red-apple",
+  "product_id": 739734,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/red-apple.txt"
+ },
+ {
+  "key": "strawberry",
+  "product_id": 739735,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/strawberry.txt"
+ },
+ {
+  "key": "green-apple",
+  "product_id": 739736,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/green-apple.txt"
+ },
+ {
+  "key": "pear",
+  "product_id": 739737,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/pear.txt"
+ },
+ {
+  "key": "peach",
+  "product_id": 739738,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/peach.txt"
+ }
+]

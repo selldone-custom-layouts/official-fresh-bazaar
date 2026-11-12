@@ -1,0 +1,32 @@
+[
+ {
+  "key": "lemon",
+  "product_id": 739745,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/lemon.txt"
+ },
+ {
+  "key": "lime",
+  "product_id": 739746,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/lime.txt"
+ },
+ {
+  "key": "banana",
+  "product_id": 739747,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/banana.txt"
+ },
+ {
+  "key": "pineapple",
+  "product_id": 739748,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/pineapple.txt"
+ },
+ {
+  "key": "mango",
+  "product_id": 739749,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/mango.txt"
+ },
+ {
+  "key": "kiwi",
+  "product_id": 739750,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/kiwi.txt"
+ }
+]

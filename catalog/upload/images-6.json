@@ -1,0 +1,37 @@
+[
+ {
+  "key": "red-grapes",
+  "product_id": 739751,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/red-grapes.txt"
+ },
+ {
+  "key": "green-grapes",
+  "product_id": 739753,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/green-grapes.txt"
+ },
+ {
+  "key": "pomegranate",
+  "product_id": 739754,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/pomegranate.txt"
+ },
+ {
+  "key": "watermelon",
+  "product_id": 739755,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/watermelon.txt"
+ },
+ {
+  "key": "cantaloupe",
+  "product_id": 739756,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/cantaloupe.txt"
+ },
+ {
+  "key": "avocado",
+  "product_id": 739757,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/avocado.txt"
+ },
+ {
+  "key": "tomato",
+  "product_id": 739758,
+  "data_uri_file": "D:/Selldone Experimental Storefront/3D Fresh Market/catalog/upload-webp/tomato.txt"
+ }
+]
