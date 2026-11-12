@@ -1,0 +1,533 @@
+{
+ "products": [
+  {
+   "key": "red-apple",
+   "product_id": 739734,
+   "main": "products/red-apple-main.jpg",
+   "gallery": [
+    "products/red-apple-g1.jpg",
+    "products/red-apple-g2.jpg",
+    "products/red-apple-g3.jpg"
+   ]
+  },
+  {
+   "key": "pear",
+   "product_id": 739737,
+   "main": "products/pear-main.jpg",
+   "gallery": [
+    "products/pear-g1.jpg",
+    "products/pear-g2.jpg",
+    "products/pear-g3.jpg"
+   ]
+  },
+  {
+   "key": "peach",
+   "product_id": 739738,
+   "main": "products/peach-main.jpg",
+   "gallery": [
+    "products/peach-g1.jpg",
+    "products/peach-g2.jpg"
+   ]
+  },
+  {
+   "key": "plum",
+   "product_id": 739740,
+   "main": "products/plum-main.jpg",
+   "gallery": [
+    "products/plum-g1.jpg",
+    "products/plum-g2.jpg",
+    "products/plum-g3.jpg"
+   ]
+  },
+  {
+   "key": "cherry",
+   "product_id": 739741,
+   "main": "products/cherry-main.jpg",
+   "gallery": [
+    "products/cherry-g1.jpg",
+    "products/cherry-g2.jpg",
+    "products/cherry-g3.jpg"
+   ]
+  },
+  {
+   "key": "orange",
+   "product_id": 739743,
+   "main": "products/orange-main.jpg",
+   "gallery": [
+    "products/orange-g1.jpg",
+    "products/orange-g2.jpg",
+    "products/orange-g3.jpg"
+   ]
+  },
+  {
+   "key": "tangerine",
+   "product_id": 739744,
+   "main": "products/tangerine-main.jpg",
+   "gallery": [
+    "products/tangerine-g1.jpg",
+    "products/tangerine-g2.jpg",
+    "products/tangerine-g3.jpg"
+   ]
+  },
+  {
+   "key": "lemon",
+   "product_id": 739745,
+   "main": "products/lemon-main.jpg",
+   "gallery": [
+    "products/lemon-g1.jpg",
+    "products/lemon-g2.jpg",
+    "products/lemon-g3.jpg"
+   ]
+  },
+  {
+   "key": "lime",
+   "product_id": 739746,
+   "main": "products/lime-main.jpg",
+   "gallery": [
+    "products/lime-g1.jpg",
+    "products/lime-g2.jpg",
+    "products/lime-g3.jpg"
+   ]
+  },
+  {
+   "key": "banana",
+   "product_id": 739747,
+   "main": "products/banana-main.jpg",
+   "gallery": [
+    "products/banana-g1.jpg",
+    "products/banana-g2.jpg",
+    "products/banana-g3.jpg"
+   ]
+  },
+  {
+   "key": "pineapple",
+   "product_id": 739748,
+   "main": "products/pineapple-main.jpg",
+   "gallery": [
+    "products/pineapple-g1.jpg",
+    "products/pineapple-g2.jpg"
+   ]
+  },
+  {
+   "key": "mango",
+   "product_id": 739749,
+   "main": "products/mango-main.jpg",
+   "gallery": [
+    "products/mango-g1.jpg",
+    "products/mango-g2.jpg",
+    "products/mango-g3.jpg"
+   ]
+  },
+  {
+   "key": "kiwi",
+   "product_id": 739750,
+   "main": "products/kiwi-main.jpg",
+   "gallery": [
+    "products/kiwi-g1.jpg",
+    "products/kiwi-g2.jpg",
+    "products/kiwi-g3.jpg"
+   ]
+  },
+  {
+   "key": "strawberry",
+   "product_id": 739735,
+   "main": "products/strawberry-main.jpg",
+   "gallery": [
+    "products/strawberry-g1.jpg",
+    "products/strawberry-g2.jpg",
+    "products/strawberry-g3.jpg"
+   ]
+  },
+  {
+   "key": "red-grapes",
+   "product_id": 739751,
+   "main": "products/red-grapes-main.jpg",
+   "gallery": [
+    "products/red-grapes-g1.jpg",
+    "products/red-grapes-g2.jpg"
+   ]
+  },
+  {
+   "key": "green-grapes",
+   "product_id": 739753,
+   "main": "products/green-grapes-main.jpg",
+   "gallery": [
+    "products/green-grapes-g1.jpg",
+    "products/green-grapes-g2.jpg",
+    "products/green-grapes-g3.jpg"
+   ]
+  },
+  {
+   "key": "pomegranate",
+   "product_id": 739754,
+   "main": "products/pomegranate-main.jpg",
+   "gallery": [
+    "products/pomegranate-g1.jpg",
+    "products/pomegranate-g2.jpg",
+    "products/pomegranate-g3.jpg"
+   ]
+  },
+  {
+   "key": "cantaloupe",
+   "product_id": 739756,
+   "main": "products/cantaloupe-main.jpg",
+   "gallery": [
+    "products/cantaloupe-g1.jpg"
+   ]
+  },
+  {
+   "key": "avocado",
+   "product_id": 739757,
+   "main": "products/avocado-main.jpg",
+   "gallery": [
+    "products/avocado-g1.jpg",
+    "products/avocado-g2.jpg",
+    "products/avocado-g3.jpg"
+   ]
+  },
+  {
+   "key": "tomato",
+   "product_id": 739758,
+   "main": "products/tomato-main.jpg",
+   "gallery": [
+    "products/tomato-g1.jpg",
+    "products/tomato-g2.jpg",
+    "products/tomato-g3.jpg"
+   ]
+  },
+  {
+   "key": "cucumber",
+   "product_id": 739759,
+   "main": "products/cucumber-main.jpg",
+   "gallery": [
+    "products/cucumber-g1.jpg",
+    "products/cucumber-g2.jpg",
+    "products/cucumber-g3.jpg"
+   ]
+  },
+  {
+   "key": "zucchini",
+   "product_id": 739771,
+   "main": "products/zucchini-main.jpg",
+   "gallery": [
+    "products/zucchini-g1.jpg",
+    "products/zucchini-g2.jpg",
+    "products/zucchini-g3.jpg"
+   ]
+  },
+  {
+   "key": "eggplant",
+   "product_id": 739773,
+   "main": "products/eggplant-main.jpg",
+   "gallery": [
+    "products/eggplant-g1.jpg",
+    "products/eggplant-g2.jpg"
+   ]
+  },
+  {
+   "key": "red-pepper",
+   "product_id": 739774,
+   "main": "products/red-pepper-main.jpg",
+   "gallery": [
+    "products/red-pepper-g1.jpg",
+    "products/red-pepper-g2.jpg"
+   ]
+  },
+  {
+   "key": "chili",
+   "product_id": 739777,
+   "main": "products/chili-main.jpg",
+   "gallery": [
+    "products/chili-g1.jpg",
+    "products/chili-g2.jpg"
+   ]
+  },
+  {
+   "key": "potato",
+   "product_id": 739778,
+   "main": "products/potato-main.jpg",
+   "gallery": [
+    "products/potato-g1.jpg",
+    "products/potato-g2.jpg",
+    "products/potato-g3.jpg"
+   ]
+  },
+  {
+   "key": "onion",
+   "product_id": 739779,
+   "main": "products/onion-main.jpg",
+   "gallery": [
+    "products/onion-g1.jpg",
+    "products/onion-g2.jpg",
+    "products/onion-g3.jpg"
+   ]
+  },
+  {
+   "key": "red-onion",
+   "product_id": 739780,
+   "main": "products/red-onion-main.jpg",
+   "gallery": [
+    "products/red-onion-g1.jpg",
+    "products/red-onion-g2.jpg",
+    "products/red-onion-g3.jpg"
+   ]
+  },
+  {
+   "key": "ginger",
+   "product_id": 739783,
+   "main": "products/ginger-main.jpg",
+   "gallery": [
+    "products/ginger-g1.jpg",
+    "products/ginger-g2.jpg"
+   ]
+  },
+  {
+   "key": "pumpkin",
+   "product_id": 739784,
+   "main": "products/pumpkin-main.jpg",
+   "gallery": [
+    "products/pumpkin-g1.jpg",
+    "products/pumpkin-g2.jpg"
+   ]
+  },
+  {
+   "key": "fig",
+   "product_id": 739742,
+   "main": "products/fig-main.jpg",
+   "gallery": [
+    "products/fig-g1.jpg",
+    "products/fig-g2.jpg"
+   ]
+  },
+  {
+   "key": "cabbage",
+   "product_id": 739733,
+   "main": "products/cabbage-main.jpg",
+   "gallery": [
+    "products/cabbage-g1.jpg",
+    "products/cabbage-g2.jpg"
+   ]
+  },
+  {
+   "key": "broccoli",
+   "product_id": 739760,
+   "main": "products/broccoli-main.jpg",
+   "gallery": [
+    "products/broccoli-g1.jpg",
+    "products/broccoli-g2.jpg",
+    "products/broccoli-g3.jpg"
+   ]
+  },
+  {
+   "key": "cauliflower",
+   "product_id": 739761,
+   "main": "products/cauliflower-main.jpg",
+   "gallery": [
+    "products/cauliflower-g1.jpg",
+    "products/cauliflower-g2.jpg"
+   ]
+  },
+  {
+   "key": "watermelon",
+   "product_id": 739755,
+   "main": "products/watermelon-main.jpg",
+   "gallery": [
+    "products/watermelon-g1.jpg",
+    "products/watermelon-g2.jpg"
+   ]
+  },
+  {
+   "key": "corn",
+   "product_id": 739762,
+   "main": "products/corn-main.jpg",
+   "gallery": [
+    "products/corn-g1.jpg"
+   ]
+  },
+  {
+   "key": "apricot",
+   "product_id": 739739,
+   "main": "products/apricot-main.jpg",
+   "gallery": [
+    "products/apricot-g1.jpg",
+    "products/apricot-g2.jpg"
+   ]
+  },
+  {
+   "key": "mint",
+   "product_id": 739767,
+   "main": "products/mint-main.jpg",
+   "gallery": [
+    "products/mint-g1.jpg"
+   ]
+  },
+  {
+   "key": "garlic",
+   "product_id": 739781,
+   "main": "products/garlic-main.jpg",
+   "gallery": [
+    "products/garlic-g1.jpg",
+    "products/garlic-g2.jpg",
+    "products/garlic-g3.jpg"
+   ]
+  },
+  {
+   "key": "mushroom",
+   "product_id": 739763,
+   "main": "products/mushroom-main.jpg",
+   "gallery": [
+    "products/mushroom-g1.jpg"
+   ]
+  },
+  {
+   "key": "radish",
+   "product_id": 739782,
+   "main": "products/radish-main.jpg",
+   "gallery": [
+    "products/radish-g1.jpg",
+    "products/radish-g2.jpg"
+   ]
+  },
+  {
+   "key": "leek",
+   "product_id": 739764,
+   "main": "products/leek-main.jpg",
+   "gallery": [
+    "products/leek-g1.jpg"
+   ]
+  },
+  {
+   "key": "green-apple",
+   "product_id": 739736,
+   "main": "products/green-apple-main.jpg",
+   "gallery": [
+    "products/green-apple-g1.jpg",
+    "products/green-apple-g2.jpg",
+    "products/green-apple-g3.jpg"
+   ]
+  },
+  {
+   "key": "lettuce",
+   "product_id": 739752,
+   "main": "products/lettuce-main.jpg",
+   "gallery": [
+    "products/lettuce-g1.jpg"
+   ]
+  },
+  {
+   "key": "celery",
+   "product_id": 739765,
+   "main": "products/celery-main.jpg",
+   "gallery": [
+    "products/celery-g1.jpg",
+    "products/celery-g2.jpg"
+   ]
+  },
+  {
+   "key": "yellow-pepper",
+   "product_id": 739775,
+   "main": "products/yellow-pepper-main.jpg",
+   "gallery": [
+    "products/yellow-pepper-g1.jpg",
+    "products/yellow-pepper-g2.jpg"
+   ]
+  },
+  {
+   "key": "green-pepper",
+   "product_id": 739776,
+   "main": "products/green-pepper-main.jpg",
+   "gallery": [
+    "products/green-pepper-g1.jpg"
+   ]
+  },
+  {
+   "key": "carrot",
+   "product_id": 739732,
+   "main": "products/carrot-main.jpg",
+   "gallery": [
+    "products/carrot-g1.jpg",
+    "products/carrot-g2.jpg"
+   ]
+  },
+  {
+   "key": "parsley",
+   "product_id": 739766,
+   "main": "products/parsley-main.jpg",
+   "gallery": [
+    "products/parsley-g1.jpg"
+   ]
+  },
+  {
+   "key": "basil",
+   "product_id": 739768,
+   "main": "products/basil-main.jpg",
+   "gallery": [
+    "products/basil-g1.jpg"
+   ]
+  },
+  {
+   "key": "dill",
+   "product_id": 739770,
+   "main": "products/dill-main.jpg",
+   "gallery": [
+    "products/dill-g1.jpg"
+   ]
+  },
+  {
+   "key": "cilantro",
+   "product_id": 739772,
+   "main": "products/cilantro-main.jpg",
+   "gallery": [
+    "products/cilantro-g1.jpg",
+    "products/cilantro-g2.jpg"
+   ]
+  },
+  {
+   "key": "spinach",
+   "product_id": 739769,
+   "main": "products/spinach-main.jpg",
+   "gallery": [
+    "products/spinach-g1.jpg",
+    "products/spinach-g2.jpg"
+   ]
+  }
+ ],
+ "categories": [
+  {
+   "key": "orchard",
+   "category_id": 112695,
+   "image": "categories/orchard.jpg"
+  },
+  {
+   "key": "citrus",
+   "category_id": 112696,
+   "image": "categories/citrus.jpg"
+  },
+  {
+   "key": "berries",
+   "category_id": 112697,
+   "image": "categories/berries.jpg"
+  },
+  {
+   "key": "garden",
+   "category_id": 112698,
+   "image": "categories/garden.jpg"
+  },
+  {
+   "key": "roots",
+   "category_id": 112699,
+   "image": "categories/roots.jpg"
+  },
+  {
+   "key": "greens",
+   "category_id": 112700,
+   "image": "categories/greens.jpg"
+  },
+  {
+   "key": "herbs",
+   "category_id": 112701,
+   "image": "categories/herbs.jpg"
+  }
+ ],
+ "base_url": "https://raw.githubusercontent.com/selldone-custom-layouts/fresh-bazaar-photos/main/"
+}

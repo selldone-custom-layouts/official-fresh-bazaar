@@ -142,6 +142,7 @@ Dev-only helpers: `?market-nointro` skips the drone shot; `?market-demo` opens a
 | Produce models and product → model matching | `components/market3d/engine/produce/` |
 | People: avatars, motion capture, re-dressing, crowd behaviour | `components/market3d/engine/people/` |
 | Asset pipeline (avatars, animations, scans) | `catalog/people-pipeline/` |
+| Real product and category photos for the demo shop (cutout + shared studio backdrop) | [`catalog/real-photos/`](catalog/real-photos/README.md) |
 | Engineering notes | [`FRESH-MARKET-3D.md`](FRESH-MARKET-3D.md) |
 
 ## Credits
@@ -149,6 +150,7 @@ Dev-only helpers: `?market-nointro` skips the drone shot; `?market-demo` opens a
 - **Storefront:** built on [selldone/storefront](https://github.com/selldone/storefront) ([licence](LICENSE.md)). Selldone's original README is kept as [`README.selldone.md`](README.selldone.md).
 - **People and motion capture:** the [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) avatar library (MIT), see [`LICENSE-Rocketbox.txt`](components/market3d/assets/people/LICENSE-Rocketbox.txt).
 - **Photo-scanned produce, props, materials and the HDR sky:** [Poly Haven](https://polyhaven.com) (CC0), see [`CREDITS.txt`](components/market3d/assets/env/CREDITS.txt).
+- **Demo-shop product and category photos:** real photographs from Wikimedia Commons and Openverse (CC0, public domain, CC BY, CC BY-SA), see [`catalog/real-photos/CREDITS.md`](catalog/real-photos/CREDITS.md).
 - **Verses:** the Persian texts are classical and in the public domain; lines traditionally attributed to a figure are labelled as such, and the English renderings are our own.
 - **Everything else** (the architecture, tilework, gate, pool, produce, fabrics and soundscape) is generated in code at runtime.
 - **Built with** [Claude Code](https://claude.com/claude-code) and [Codex](https://openai.com/codex), one model generation at a time.
