@@ -23,6 +23,9 @@ LAYOUTS = {
     # category still lifes: back row first, front row last
     "four": [dict(x=.33, base=.66, bw=.36, bh=.36), dict(x=.67, base=.65, bw=.36, bh=.36),
              dict(x=.27, base=.86, bw=.34, bh=.32), dict(x=.66, base=.87, bw=.36, bh=.32)],
+    # portrait-safe: storefront category cards crop the square to its middle ~2/3, so keep everything in x 0.2..0.8
+    "five-narrow": [dict(x=.33, base=.60, bw=.21, bh=.30), dict(x=.50, base=.57, bw=.21, bh=.32), dict(x=.67, base=.61, bw=.21, bh=.30),
+                    dict(x=.40, base=.84, bw=.23, bh=.28), dict(x=.61, base=.85, bw=.23, bh=.28)],
     "five": [dict(x=.26, base=.64, bw=.30, bh=.34), dict(x=.52, base=.60, bw=.30, bh=.36), dict(x=.77, base=.65, bw=.30, bh=.34),
              dict(x=.36, base=.86, bw=.32, bh=.30), dict(x=.68, base=.87, bw=.32, bh=.30)],
 }

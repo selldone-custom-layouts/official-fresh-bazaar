@@ -1,7 +1,7 @@
 {
  "cat-orchard": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "pear:8",
     "red-apple:15",
@@ -13,7 +13,7 @@
  },
  "cat-citrus": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "orange:11",
     "pineapple:2",
@@ -25,7 +25,7 @@
  },
  "cat-berries": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "cantaloupe:1",
     "red-grapes:24",
@@ -37,7 +37,7 @@
  },
  "cat-garden": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "eggplant:2",
     "red-pepper:68",
@@ -49,7 +49,7 @@
  },
  "cat-roots": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "onion:4",
     "carrot:2",
@@ -61,7 +61,7 @@
  },
  "cat-greens": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "cabbage:9",
     "cauliflower:24",
@@ -73,7 +73,7 @@
  },
  "cat-herbs": {
   "category": {
-   "layout": "five",
+   "layout": "five-narrow",
    "src": [
     "dill:20",
     "parsley:14",
