@@ -31,7 +31,20 @@ export const FIGURES: HistoricalFigure[] = [
     avatar: "Male_Adult_05",
     name: { fa: "حکیم عمر خیام نیشابوری", en: "Omar Khayyam" },
     epithet: { fa: "شاعر، ریاضی‌دان و منجّم · نیشابور، ۱۰۴۸–۱۱۳۱ میلادی", en: "Poet, mathematician & astronomer · Nishapur, 1048–1131" },
-    costume: { robe: "#ddd2ba", cloak: "#1f2742", trim: "#a8823a", sash: "#6e2c25", turban: "#eee8da" },
+    // indigo pearl-roundel silk qaba, gold tiraz bands, a tall cream felt kolah with a fur brim
+    costume: {
+      cloak: "#1d2340",
+      fabric: { kind: "roundel", ground: "#1b2140", colors: ["#a8843a", "#2b3463", "#c9a24a", "#e8dcc4"] },
+      trim: "#b8913f",
+      tiraz: "#c9a24a",
+      sash: "#7a2a22",
+      turban: "#6a1d22",
+      fur: "#2a1d16",
+      hat: "kolah",
+      length: "ankle",
+      open: 0,
+      sleeve: "tailored",
+    },
     seated: true,
     spot: "pool",
     verses: [
@@ -66,7 +79,20 @@ export const FIGURES: HistoricalFigure[] = [
     avatar: "Male_Adult_15",
     name: { fa: "ابوعلی سینا", en: "Avicenna (Ibn Sina)" },
     epithet: { fa: "پزشک و فیلسوف، نویسندهٔ «قانون در طب» · ۹۸۰–۱۰۳۷ میلادی", en: "Physician & philosopher, author of The Canon of Medicine · 980–1037" },
-    costume: { cloak: "#2e4a37", trim: "#c9a24a", turban: "#f1ece2", turbanExtra: 0.5 },
+    // green pearl-roundel silk, crimson sharbush with a sable brim and a gold plate
+    costume: {
+      cloak: "#1f3a2c",
+      fabric: { kind: "roundel", ground: "#1d3a2b", colors: ["#b8913f", "#2c4d3a", "#d8b062", "#e8dcc4"] },
+      trim: "#c9a24a",
+      tiraz: "#c9a24a",
+      sash: "#6e2c25",
+      turban: "#7a1f24",
+      fur: "#1e1814",
+      hat: "sharbush",
+      length: "ankle",
+      open: 0,
+      sleeve: "tailored",
+    },
     spot: /herb|سبزی|green|mint|basil|ریحان|نعناع/i,
     verses: [
       {
@@ -94,7 +120,20 @@ export const FIGURES: HistoricalFigure[] = [
     avatar: "Male_Adult_19",
     name: { fa: "محمد زکریای رازی", en: "Rhazes (al-Razi)" },
     epithet: { fa: "پزشک و شیمی‌دان · ری، ۸۶۵–۹۲۵ میلادی", en: "Physician & chemist · Rey, 865–925" },
-    costume: { cloak: "#86643f", trim: "#d8c08a", sash: "#3f5136", turban: "#ece4d2", turbanExtra: 1.5 },
+    // wine-red pearl-roundel silk, a brown felt kolah with a fur brim
+    costume: {
+      cloak: "#5a1a20",
+      fabric: { kind: "roundel", ground: "#561820", colors: ["#c9a24a", "#6e242b", "#d8b062", "#e8dcc4"] },
+      trim: "#d8b062",
+      tiraz: "#d8b062",
+      sash: "#2f4a36",
+      turban: "#2f2620",
+      fur: "#5a4430",
+      hat: "kolah",
+      length: "ankle",
+      open: 0,
+      sleeve: "tailored",
+    },
     spot: /fruit|orchard|میوه|apple|سیب/i,
     verses: [
       {

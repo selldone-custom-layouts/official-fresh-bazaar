@@ -12,7 +12,7 @@ import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 import { makeCanvas } from "../util/textures";
 import { NOISE, Rng } from "../util/noise";
 
-export type FabricKind = "termeh" | "suzani" | "ikat" | "wool";
+export type FabricKind = "termeh" | "suzani" | "ikat" | "wool" | "roundel";
 export interface FabricSpec {
   kind: FabricKind;
   ground: string;
@@ -155,6 +155,59 @@ export function fabricTexture(spec: FabricSpec, N = 512): CanvasTexture {
       const x = rng.next() * N, y = rng.next() * N;
       wrapped(N, x, y, 20, (X, Y) => flower(ctx, X, Y, N * 0.02, c2, c4));
     }
+  } else if (spec.kind === "roundel") {
+    // pearl-roundel silk (Sasanian → Buyid → Seljuk): medallions framed by a ring of pearls, each
+    // holding a rosette tree of life, with four-lobed palmettes in the spaces between them
+    const R = N * 0.21;
+    const drawRoundel = (X: number, Y: number) => {
+      ctx.beginPath();
+      ctx.arc(X, Y, R, 0, Math.PI * 2);
+      ctx.fillStyle = c1;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(X, Y, R * 0.8, 0, Math.PI * 2);
+      ctx.fillStyle = c2;
+      ctx.fill();
+      for (let i = 0; i < 22; i++) {
+        const a = (i / 22) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(X + Math.cos(a) * R * 0.9, Y + Math.sin(a) * R * 0.9, R * 0.055, 0, Math.PI * 2);
+        ctx.fillStyle = c4;
+        ctx.fill();
+      }
+      // the tree of life: a stem with paired leaves and a crowning rosette
+      ctx.strokeStyle = c3;
+      ctx.lineWidth = R * 0.07;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(X, Y + R * 0.62);
+      ctx.lineTo(X, Y - R * 0.2);
+      ctx.stroke();
+      for (const [dy, s] of [[0.38, 0.32], [0.08, 0.28]] as Array<[number, number]>)
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.ellipse(X + side * R * s * 0.75, Y + R * dy, R * s * 0.7, R * s * 0.26, side * -0.5, 0, Math.PI * 2);
+          ctx.fillStyle = c3;
+          ctx.fill();
+        }
+      flower(ctx, X, Y - R * 0.36, R * 0.34, c1, c4);
+    };
+    for (const [u, v] of [[0.25, 0.25], [0.75, 0.75]]) wrapped(N, u * N, v * N, R * 1.1, drawRoundel);
+    // palmettes in the interstices
+    for (const [u, v] of [[0.75, 0.25], [0.25, 0.75]])
+      wrapped(N, u * N, v * N, R, (X, Y) => {
+        for (let i = 0; i < 4; i++) {
+          const a = (i / 4) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.ellipse(X + Math.cos(a) * R * 0.28, Y + Math.sin(a) * R * 0.28, R * 0.3, R * 0.12, a, 0, Math.PI * 2);
+          ctx.fillStyle = c3;
+          ctx.fill();
+        }
+        ctx.beginPath();
+        ctx.arc(X, Y, R * 0.1, 0, Math.PI * 2);
+        ctx.fillStyle = c4;
+        ctx.fill();
+      });
   } else if (spec.kind === "ikat") {
     // feathered diamonds in vertical bands (the blurred edges are the signature of ikat)
     const bands = 4, w = N / bands;

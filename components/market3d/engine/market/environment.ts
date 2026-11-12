@@ -320,7 +320,7 @@ export function buildEnvironment(scene: Scene, renderer: WebGLRenderer, o: EnvOp
     // tile and water don't mirror a second, blinding one
     envRT = pmrem.fromEquirectangular(clippedSky(EA.hdr, 30));
     scene.environment = envRT.texture;
-    (scene as any).environmentIntensity = 0.8;
+    (scene as any).environmentIntensity = 0.95;
     (scene as any).environmentRotation?.set(0, rot, 0);
     scene.background = clippedSky(EA.hdr, 6);
     (scene as any).backgroundRotation?.set(0, rot, 0);
@@ -352,10 +352,13 @@ export function buildEnvironment(scene: Scene, renderer: WebGLRenderer, o: EnvOp
     sun.shadow.camera.far = 90;
     sun.shadow.bias = -0.00025;
     sun.shadow.normalBias = 0.02;
-    sun.shadow.radius = 3;
+    // a real sun is half a degree wide: soft penumbrae, and shade that still holds detail
+    sun.shadow.radius = 6;
+    (sun.shadow as any).intensity = 0.86;
   }
   group.add(sun, sun.target);
-  const hemi = new HemisphereLight(new Color("#9cc4ff"), new Color("#6a5034"), 0.3);
+  // sky fill from above and warm bounce from the brick paving, so shaded corners never go black
+  const hemi = new HemisphereLight(new Color("#a9c8f0"), new Color("#8a6a48"), 0.55);
   group.add(hemi);
 
   // ── Ground

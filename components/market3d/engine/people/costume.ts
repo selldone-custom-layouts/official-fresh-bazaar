@@ -47,8 +47,15 @@ export interface Costume {
   length?: "knee" | "calf" | "ankle";
   /** front opening half-angle in radians (0 = closed coat, default 0.32 = open cloak) */
   open?: number;
-  /** headwear: wound turban, felt cap (kolah namadi) or none */
-  hat?: "turban" | "felt" | "none";
+  /**
+   * headwear: felt cap (kolah namadi), the tall felt kolah of the 10th–12th c. with a fur brim, the
+   * Seljuk sharbush (fur brim rising into a pointed plate over the forehead), a turban, or none.
+   * `turban` gives the crown colour, `fur` the brim.
+   */
+  hat?: "turban" | "felt" | "kolah" | "sharbush" | "none";
+  fur?: string;
+  /** tiraz: the woven band round the upper sleeves of Persian robes */
+  tiraz?: string;
   /** sleeve cut: wide (period robes) or tailored (coats) */
   sleeve?: "wide" | "tailored";
 }
@@ -365,7 +372,7 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     const iU = idx(`Bip01_${s}_UpperArm`), iF = idx(`Bip01_${s}_Forearm`), iC = idx(`Bip01_${s}_Clavicle`);
     const piece: Piece = { pos: [], uv: [], col: [], skin: [], index: [], lay: coatLay + 0.6 };
     const U = 18, V = 24;
-    const base = new Color(c.fabric ? "#ffffff" : c.cloak), trim = new Color(c.trim);
+    const base = new Color(c.fabric ? "#ffffff" : c.cloak), trim = new Color(c.trim), tirazC = new Color(c.tiraz || c.trim);
     const d1 = fa.clone().sub(ua), d2 = end.clone().sub(fa);
     const side = new Vector3(), up = new Vector3(), dir = new Vector3(), q = new Vector3();
     for (let j = 0; j <= V; j++) {
@@ -391,9 +398,10 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
         q.copy(center).addScaledVector(side, Math.sin(ang) * r).addScaledVector(up, Math.cos(ang) * r - sag);
         piece.pos.push(q.x, q.y, q.z);
         piece.uv.push((i / U) * 6, t * 6);
-        const col = (t > 0.93 ? trim : base).clone().multiplyScalar(0.9 + NOISE.noise(q.x * 0.1, q.y * 0.1, q.z * 0.1) * 0.12);
+        const band = !!c.tiraz && t > 0.2 && t < 0.27;
+        const col = (t > 0.93 ? trim : band ? tirazC : base).clone().multiplyScalar(0.9 + NOISE.noise(q.x * 0.1, q.y * 0.1, q.z * 0.1) * 0.12);
         piece.col.push(col.r, col.g, col.b);
-        (piece.trim ||= []).push(t > 0.93 ? 1 : 0);
+        (piece.trim ||= []).push(t > 0.93 || band ? 1 : 0);
         const k = MathUtils.smoothstep(t, 0.42, 0.58);
         const cl = t < 0.1 ? (1 - t / 0.1) * (tailored ? 0.25 : 0.45) : 0;
         piece.skin.push([[iU, (1 - k) * (1 - cl)], [iF, k * (1 - cl)], [iC, cl]]);
@@ -443,6 +451,71 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     const ix = g.index!;
     for (let i = 0; i < ix.count; i++) piece.index.push(ix.getX(i));
     pieces.push(piece);
+  }
+  // ── period Persian hats: the tall felt kolah with a fur brim (Samanid–Seljuk scholars and
+  // courtiers), and the Seljuk sharbush, whose fur brim rises into a pointed, gold-faced plate
+  if (hat === "kolah" || hat === "sharbush") {
+    const hc = new Vector3();
+    let cnt = 0;
+    for (const p of headPts) if (p.y > topY - 8) (hc.add(p), cnt++);
+    hc.multiplyScalar(1 / Math.max(1, cnt));
+    let hr = 0;
+    for (const p of headPts) if (p.y > topY - 9 && p.y < topY - 3) hr = Math.max(hr, Math.hypot(p.x - hc.x, p.z - hc.z));
+    hr = Math.min(hr, 11.5) + 0.5;
+    const iH = idx("Bip01_Head");
+    const crownC = new Color(c.turban), furC = new Color(c.fur || "#2a1f18"), goldC = new Color(c.trim);
+    const fromGeo = (g: BufferGeometry, colour: (x: number, y: number, z: number) => Color, us: number, vs: number) => {
+      const piece: Piece = { pos: [], uv: [], col: [], skin: [], index: [] };
+      const pp = g.getAttribute("position"), uu = g.getAttribute("uv");
+      for (let i = 0; i < pp.count; i++) {
+        const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i);
+        piece.pos.push(x, y, z);
+        piece.uv.push(uu ? uu.getX(i) * us : 0, uu ? uu.getY(i) * vs : 0);
+        const cc = colour(x, y, z);
+        piece.col.push(cc.r, cc.g, cc.b);
+        piece.skin.push([[iH, 1]]);
+      }
+      const ix = g.index!;
+      for (let i = 0; i < ix.count; i++) piece.index.push(ix.getX(i));
+      pieces.push(piece);
+    };
+    const brimY = topY - 6.2;
+    // crown
+    const prof: Array<[number, number]> =
+      hat === "kolah"
+        ? [[hr + 0.2, -6.4], [hr + 0.1, -2.5], [hr - 0.9, 2], [hr * 0.64, 7], [hr * 0.36, 11.5], [hr * 0.1, 15], [0, 15.6]]
+        : [[hr + 0.3, -6.4], [hr + 0.5, -2], [hr - 0.2, 2.2], [hr * 0.74, 4.4], [0, 5.2]];
+    const crown = lathe(prof.map(([r, y]) => [r, topY + y] as [number, number]), 40, 18);
+    crown.translate(hc.x, 0, hc.z - 0.4);
+    fromGeo(crown, (x, y, z) => crownC.clone().multiplyScalar(0.84 + NOISE.noise(x * 0.4, y * 0.4, z * 0.4) * 0.1 + Math.sin(Math.atan2(z - hc.z, x - hc.x) * 10) * 0.02), 8, 3);
+    // fur brim: a thick roll round the head; on the sharbush it rises over the forehead
+    const brim = new TorusGeometry(hr + 0.9, hat === "kolah" ? 2.5 : 2.8, 14, 72);
+    brim.rotateX(Math.PI / 2);
+    {
+      const pp = brim.getAttribute("position");
+      for (let i = 0; i < pp.count; i++) {
+        const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i);
+        const f = Math.max(0, z / Math.max(1e-3, Math.hypot(x, z))); // 1 = straight ahead (+z)
+        const rise = hat === "sharbush" ? 9.5 * Math.pow(f, 9) : 0;
+        // shaggy fur: low-frequency lumps along the roll
+        const fur = 1 + NOISE.noise(x * 0.35, y * 0.6, z * 0.35) * 0.12;
+        pp.setXYZ(i, x, y * fur + rise, z);
+      }
+    }
+    brim.translate(hc.x, brimY, hc.z - 0.4);
+    fromGeo(brim, (x, y, z) => furC.clone().multiplyScalar(0.8 + NOISE.noise(x * 1.3, y * 1.3, z * 1.3) * 0.22), 24, 2);
+    if (hat === "sharbush") {
+      // the gold-faced plate filling the raised point, with a jewel at its heart
+      const plate = surface(10, 8, (u, v, out) => {
+        const w = 4.6 * Math.pow(1 - v, 0.85);
+        const x = (u * 2 - 1) * w;
+        out.set(hc.x + x, brimY + 1.2 + v * 8.6, hc.z - 0.4 + hr + 1.1 - v * 1.6 - (x * x) / (2 * (hr + 2)));
+      }, false);
+      fromGeo(plate, (_x, y) => goldC.clone().multiplyScalar(0.95 + Math.sin(y * 2.2) * 0.05), 1, 1);
+      const jewel = new SphereGeometry(1.1, 12, 8);
+      jewel.translate(hc.x, brimY + 4.2, hc.z - 0.4 + hr + 1.5);
+      fromGeo(jewel, () => new Color("#8a1a24"), 1, 1);
+    }
   }
   // ── turban, wound around the skull and sitting on the forehead
   if (hat === "turban") {
@@ -645,7 +718,7 @@ export function costumeMesh(a: AvatarAsset, c: Costume, like: SkinnedMesh, shado
     map = fabricTexture(c.fabric).clone();
     // true-to-life motif sizes on the 9 cm UV grid: termeh boteh ≈ 4 cm in rows, suzani rosettes
     // ≈ 9 cm, ikat bands ≈ 5 cm wide
-    const rep = { termeh: 0.45, suzani: 0.3, ikat: 0.4, wool: 0.62 }[c.fabric.kind];
+    const rep = { termeh: 0.45, suzani: 0.3, ikat: 0.4, wool: 0.62, roundel: 0.56 }[c.fabric.kind];
     map.repeat.set(rep, rep);
     map.needsUpdate = true;
   }
@@ -655,15 +728,16 @@ export function costumeMesh(a: AvatarAsset, c: Costume, like: SkinnedMesh, shado
     roughness: 0.9,
     metalness: 0,
     envMapIntensity: 0.6,
-    sheen: c.fabric?.kind === "termeh" ? 0.6 : 0.3,
+    sheen: c.fabric?.kind === "termeh" || c.fabric?.kind === "roundel" ? 0.6 : 0.3,
     sheenRoughness: 0.55,
-    sheenColor: new Color(c.fabric?.kind === "termeh" ? "#ffe2a0" : "#fff4e0"),
+    sheenColor: new Color(c.fabric?.kind === "termeh" || c.fabric?.kind === "roundel" ? "#ffe2a0" : "#fff4e0"),
     normalMap: weave,
     normalScale: new Vector2(0.16, 0.16),
     side: DoubleSide,
   });
   withCapsules(cloth, uniforms);
-  const felt = new MeshPhysicalMaterial({ vertexColors: true, roughness: 0.96, metalness: 0, sheen: 0.4, sheenRoughness: 0.9, sheenColor: new Color("#ffffff"), normalMap: weave, normalScale: new Vector2(0.08, 0.08) });
+  // felt and fur: matte, with only a faint sheen so dark fur stays dark
+  const felt = new MeshPhysicalMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, sheen: 0.18, sheenRoughness: 0.85, sheenColor: new Color("#e8dccb"), normalMap: weave, normalScale: new Vector2(0.12, 0.12) });
   const m = new SkinnedMesh(geo, [cloth, felt]);
   m.position.copy(like.position);
   m.quaternion.copy(like.quaternion);
