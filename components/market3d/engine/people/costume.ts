@@ -17,6 +17,7 @@ import {
   Float32BufferAttribute,
   MathUtils,
   MeshPhysicalMaterial,
+  MeshStandardMaterial,
   SkinnedMesh,
   TorusGeometry,
   SphereGeometry,
@@ -56,6 +57,14 @@ export interface Costume {
   fur?: string;
   /** tiraz: the woven band round the upper sleeves of Persian robes */
   tiraz?: string;
+  /**
+   * Re-dress instead of over-dress: the avatar keeps its own artist-made garments (true fit, folds,
+   * seams and skinning) re-woven in `fabric`, with trims at collar, placket and cuffs; only a slim
+   * skirt below the sash and the headwear are added. See `redress`.
+   */
+  fitted?: boolean;
+  /** colour of the trousers under a fitted qaba */
+  trousers?: string;
   /** sleeve cut: wide (period robes) or tailored (coats) */
   sleeve?: "wide" | "tailored";
 }
@@ -93,7 +102,7 @@ interface Piece {
   trim?: number[];
   /** layer order for the collision pass (cm): outer layers are kept this far outside inner ones */
   lay?: number;
-  /** 1 = body panel (drapes outward over the legs), 0 = sleeve (pushed off the arm the short way) */
+  /** 1 = body panel (drapes outward over the legs), 2 = sash (also ignores the arms), 0 = sleeve */
   drape?: number;
 }
 
@@ -174,7 +183,8 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
   };
   const RX = smooth(rx), RF = smooth(rf), RB = smooth(rb);
   const hipS = Math.round((pelvis.y - y0) / STEP);
-  const flare = c.sleeve === "tailored" ? 0.62 : 1;
+  // a fitted qaba falls almost straight; tailored coats flare gently; period robes freely
+  const flare = c.fitted ? 0.2 : c.sleeve === "tailored" ? 0.62 : 1;
   for (let i = hipS - 1; i >= 0; i--) {
     RX[i] = Math.max(RX[i], RX[i + 1] + 0.55 * flare);
     RF[i] = Math.max(RF[i], RF[i + 1] + 0.35 * flare);
@@ -248,7 +258,7 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
   const shoulderX = (Math.abs(uaL.x - cx) + Math.abs(uaR.x - cx)) / 2 + (tailored ? -1.5 : 2.2);
   const shoulderY = (uaL.y + uaR.y) / 2 + 1.5;
   const pieces: Piece[] = [];
-  const shell = (open: number, pad: number, hemY: number, topYs: number, base: string, trim: string | null, folds: number, lay: number) => {
+  const shell = (open: number, pad: number, hemY: number, topYs: number, base: string, trim: string | null, folds: number, lay: number, top: "collar" | "waist" = "collar") => {
     const piece: Piece = { pos: [], uv: [], col: [], skin: [], index: [], lay, drape: 1 };
     const U = 60;
     const cBase = new Color(base), cTrim = trim ? new Color(trim) : null;
@@ -259,12 +269,14 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     // trims end in a crisp line instead of a blurred, zig-zag gradient
     // closed garments finish in a standing (mandarin) collar: the shoulders slope up to the base of
     // the neck and a 3.5 cm band rises straight from there; open cloaks just lie on the shoulders
-    const stand = open < 0.05;
+    const stand = open < 0.05 && top === "collar";
     const neckTop = stand ? topYs - 3.5 : topYs;
-    const HEM = hemY + 4, COL = stand ? neckTop - 0.3 : topYs - 2.5;
+    // a skirt that starts at the waist (under a sash) has no collar band
+    const HEM = hemY + 4, COL = top === "waist" ? Infinity : stand ? neckTop - 0.3 : topYs - 2.5;
     const ys: number[] = [];
     for (let j = 0; j <= 40; j++) ys.push(MathUtils.lerp(hemY, topYs, j / 40));
-    if (cTrim) ys.push(HEM - 0.2, HEM + 0.2, COL - 0.2, COL + 0.2);
+    if (cTrim) ys.push(HEM - 0.2, HEM + 0.2);
+    if (cTrim && Number.isFinite(COL)) ys.push(COL - 0.2, COL + 0.2);
     ys.sort((a2, b2) => a2 - b2);
     const T = Math.PI * 2 - open * 2; // the angular span of the garment
     for (const y of ys) {
@@ -324,24 +336,25 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
   };
 
   // inner robe (only when the avatar's own clothes must be hidden)
-  if (c.robe) shell(0, 1.6, footL.y + 3, neck.y + 1, c.robe, null, 0.3, 0);
+  if (c.robe && !c.fitted) shell(0, 1.6, footL.y + 3, neck.y + 1, c.robe, null, 0.3, 0);
   // outer garment: cloak or coat, open or closed, knee / calf / ankle length
   const hem = c.length === "knee" ? calfL.y + 3 : c.length === "calf" ? (calfL.y + footL.y) / 2 + 2 : footL.y + 9;
   const coatPad = c.robe ? 3.2 : tailored ? 1.9 : 2.6;
   // layer order: robe 0 → sash (under an open cloak) → coat → sash over a closed coat → sleeves
   const closed = (c.open ?? 0.32) < 0.05;
   const coatLay = c.robe || !closed ? 1.6 : 0;
-  shell(c.open ?? 0.32, coatPad, hem, closed ? neck.y + 2.5 : neck.y - 1, c.fabric ? "#ffffff" : c.cloak, c.trim, tailored ? 0.55 : 1, coatLay);
+  // a fitted figure wears only its own clothes re-woven (see `redress`): no garment is layered on top
+  if (!c.fitted) shell(c.open ?? 0.32, coatPad, hem, closed ? neck.y + 2.5 : neck.y - 1, c.fabric ? "#ffffff" : c.cloak, c.trim, tailored ? 0.55 : 1, coatLay);
   // sash around the waist
   if (c.sash) {
-    const piece: Piece = { pos: [], uv: [], col: [], skin: [], index: [], lay: closed ? coatLay + 1.0 : 0.8, drape: 1 };
+    const piece: Piece = { pos: [], uv: [], col: [], skin: [], index: [], lay: closed ? coatLay + 1.0 : 0.8, drape: 2 };
     const U = 40, V = 3;
     const sc = new Color(c.sash);
     for (let j = 0; j <= V; j++) {
-      const y = waistY - 4.5 + (j / V) * 9;
+      const y = c.fitted ? waistY - 2.5 + (j / V) * 5 : waistY - 4.5 + (j / V) * 9;
       for (let i = 0; i <= U; i++) {
         const ang = (i / U) * Math.PI * 2;
-        const pad = (c.open ?? 0.32) < 0.05 ? coatPad + (tailored ? 0.4 : 0.9) : c.robe ? 2.3 : 1.6;
+        const pad = c.fitted ? 1.15 : (c.open ?? 0.32) < 0.05 ? coatPad + (tailored ? 0.4 : 0.9) : c.robe ? 2.3 : 1.6;
         const x = at(RX, y) + pad, zf = at(RF, y) + pad, zb = at(RB, y) + pad;
         const s = Math.sin(ang);
         const px = cx + Math.cos(ang) * x, pz = cz + s * (s > 0 ? zf : zb);
@@ -361,8 +374,8 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     pieces.push(piece);
   }
 
-  // ── wide sleeves along each arm
-  for (const s of ["L", "R"]) {
+  // ── wide sleeves along each arm (a fitted qaba keeps the avatar's own sleeves)
+  for (const s of c.fitted ? [] : ["L", "R"]) {
     const ua = J(`Bip01_${s}_UpperArm`), fa = J(`Bip01_${s}_Forearm`), ha = J(`Bip01_${s}_Hand`);
     // tailored sleeves reach just past the wrist bone (covering any shirt cuff underneath)
     const end = ha.clone().addScaledVector(ha.clone().sub(fa).normalize(), tailored ? 0.6 : -1.5);
@@ -461,7 +474,8 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     hc.multiplyScalar(1 / Math.max(1, cnt));
     let hr = 0;
     for (const p of headPts) if (p.y > topY - 9 && p.y < topY - 3) hr = Math.max(hr, Math.hypot(p.x - hc.x, p.z - hc.z));
-    hr = Math.min(hr, 11.5) + 0.5;
+    // a real head is ~9 cm in radius at the hat band; measured hair can exaggerate it
+    hr = MathUtils.clamp(hr, 8.2, 10.2) + 0.35;
     const iH = idx("Bip01_Head");
     const crownC = new Color(c.turban), furC = new Color(c.fur || "#2a1f18"), goldC = new Color(c.trim);
     const fromGeo = (g: BufferGeometry, colour: (x: number, y: number, z: number) => Color, us: number, vs: number) => {
@@ -479,26 +493,26 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
       for (let i = 0; i < ix.count; i++) piece.index.push(ix.getX(i));
       pieces.push(piece);
     };
-    const brimY = topY - 6.2;
+    const brimY = topY - 7.2; // the band sits a little above the brow
     // crown
     const prof: Array<[number, number]> =
       hat === "kolah"
-        ? [[hr + 0.2, -6.4], [hr + 0.1, -2.5], [hr - 0.9, 2], [hr * 0.64, 7], [hr * 0.36, 11.5], [hr * 0.1, 15], [0, 15.6]]
-        : [[hr + 0.3, -6.4], [hr + 0.5, -2], [hr - 0.2, 2.2], [hr * 0.74, 4.4], [0, 5.2]];
+        ? [[hr + 0.15, -7.4], [hr + 0.05, -3], [hr - 0.5, 1.2], [hr * 0.7, 4.5], [hr * 0.4, 7.5], [hr * 0.12, 9.6], [0, 10]]
+        : [[hr + 0.2, -7.4], [hr + 0.3, -3], [hr - 0.2, 1.4], [hr * 0.74, 3.5], [0, 4.2]];
     const crown = lathe(prof.map(([r, y]) => [r, topY + y] as [number, number]), 40, 18);
     crown.translate(hc.x, 0, hc.z - 0.4);
     fromGeo(crown, (x, y, z) => crownC.clone().multiplyScalar(0.84 + NOISE.noise(x * 0.4, y * 0.4, z * 0.4) * 0.1 + Math.sin(Math.atan2(z - hc.z, x - hc.x) * 10) * 0.02), 8, 3);
     // fur brim: a thick roll round the head; on the sharbush it rises over the forehead
-    const brim = new TorusGeometry(hr + 0.9, hat === "kolah" ? 2.5 : 2.8, 14, 72);
+    const brim = new TorusGeometry(hr + 0.55, hat === "kolah" ? 1.5 : 1.8, 14, 72);
     brim.rotateX(Math.PI / 2);
     {
       const pp = brim.getAttribute("position");
       for (let i = 0; i < pp.count; i++) {
         const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i);
         const f = Math.max(0, z / Math.max(1e-3, Math.hypot(x, z))); // 1 = straight ahead (+z)
-        const rise = hat === "sharbush" ? 9.5 * Math.pow(f, 9) : 0;
+        const rise = hat === "sharbush" ? 6.5 * Math.pow(f, 9) : 0;
         // shaggy fur: low-frequency lumps along the roll
-        const fur = 1 + NOISE.noise(x * 0.35, y * 0.6, z * 0.35) * 0.12;
+        const fur = 1 + NOISE.noise(x * 0.5, y * 0.8, z * 0.5) * 0.1;
         pp.setXYZ(i, x, y * fur + rise, z);
       }
     }
@@ -507,13 +521,13 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     if (hat === "sharbush") {
       // the gold-faced plate filling the raised point, with a jewel at its heart
       const plate = surface(10, 8, (u, v, out) => {
-        const w = 4.6 * Math.pow(1 - v, 0.85);
+        const w = 3.4 * Math.pow(1 - v, 0.85);
         const x = (u * 2 - 1) * w;
-        out.set(hc.x + x, brimY + 1.2 + v * 8.6, hc.z - 0.4 + hr + 1.1 - v * 1.6 - (x * x) / (2 * (hr + 2)));
+        out.set(hc.x + x, brimY + 0.8 + v * 6, hc.z - 0.4 + hr + 0.7 - v * 1.2 - (x * x) / (2 * (hr + 2)));
       }, false);
       fromGeo(plate, (_x, y) => goldC.clone().multiplyScalar(0.95 + Math.sin(y * 2.2) * 0.05), 1, 1);
-      const jewel = new SphereGeometry(1.1, 12, 8);
-      jewel.translate(hc.x, brimY + 4.2, hc.z - 0.4 + hr + 1.5);
+      const jewel = new SphereGeometry(0.8, 12, 8);
+      jewel.translate(hc.x, brimY + 3, hc.z - 0.4 + hr + 1.0);
       fromGeo(jewel, () => new Color("#8a1a24"), 1, 1);
     }
   }
@@ -667,6 +681,8 @@ function withCapsules(mat: MeshPhysicalMaterial, uniforms: { uCapA: { value: Vec
             // a coat panel never wraps behind a leg that swings into it: it is carried outward,
             // over the leg, as real cloth is (sleeves and anything near the arms take the short way)
             bool arm = i >= 6 && i <= 9;
+            // a sash is wrapped tight round the waist: limbs rest on it, never push it
+            if (drape > 1.5) continue;
             if (drape > 0.5 && !arm) {
               // along the cloth's normal when it faces the limb (a lap over a thigh) or when the limb
               // has come through from behind (a shin through a skirt); otherwise the short way
@@ -696,6 +712,153 @@ function withCapsules(mat: MeshPhysicalMaterial, uniforms: { uCapA: { value: Vec
       );
   };
   mat.customProgramCacheKey = () => "fm-capsules";
+}
+
+/**
+ * Re-dressing. Instead of wrapping a garment round the avatar, re-weave the clothes it already wears:
+ * the artist-made coat keeps its exact fit, folds, seams and skinning — so nothing is inflated and
+ * nothing pokes through — and only its cloth changes. Per fragment the shader
+ *  • replaces the original fabric with the Persian silk, projected round the torso and round each
+ *    arm in true centimetres (the same scale as the skirt below the sash);
+ *  • keeps the original folds, seams and creases as shading: each texel's brightness relative to the
+ *    average brightness of its neighbourhood (plus the original normal map);
+ *  • adds a gold collar, a front placket, cuffs and tiraz bands on the upper sleeves;
+ *  • turns the trousers into plain dark shalvar and leaves skin and shoes untouched.
+ */
+export function redress(a: AvatarAsset, mesh: SkinnedMesh, c: Costume) {
+  if (!c.fabric) return;
+  const mats = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) as MeshStandardMaterial[];
+  const bodyMat = mats.find((m) => m.name.endsWith("-body"));
+  if (!bodyMat || !bodyMat.map) return;
+  const names = a.bones.map((b) => b.n.replace(/^Bip0\d/, "Bip01"));
+  const idx = (n: string) => names.indexOf(n);
+  const J = (n: string) => new Vector3().setFromMatrixPosition(a.inverses[idx(n)].clone().invert());
+  const geo = a.geometry.clone();
+  const P = geo.getAttribute("position"), SI = geo.getAttribute("skinIndex"), SW = geo.getAttribute("skinWeight"), UV = geo.getAttribute("uv");
+  const n = P.count;
+  const onBody = new Uint8Array(n);
+  const index = geo.index!;
+  for (const g of geo.groups) {
+    if (mats[g.materialIndex ?? 0] !== bodyMat) continue;
+    for (let k = g.start; k < g.start + g.count; k++) onBody[index.getX(k)] = 1;
+  }
+  const pelvis = J("Bip01_Pelvis"), spine2 = J("Bip01_Spine2"), neck = J("Bip01_Neck");
+  const cx = pelvis.x, cz = (pelvis.z + spine2.z) / 2;
+  const arms = ["L", "R"].map((s) => {
+    const ua = J(`Bip01_${s}_UpperArm`), ha = J(`Bip01_${s}_Hand`);
+    const dir = ha.clone().sub(ua);
+    const len = dir.length();
+    dir.normalize();
+    const side = new Vector3(0, 1, 0).cross(dir);
+    if (side.lengthSq() < 1e-3) side.set(0, 0, 1);
+    side.normalize();
+    return { s, ua, dir, len, side, up: dir.clone().cross(side).normalize() };
+  });
+  // local average brightness of the original cloth (a 64² copy of the atlas, in linear light)
+  const L = 64;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = L;
+  const ctx = cv.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(bodyMat.map.image as CanvasImageSource, 0, 0, L, L);
+  const px = ctx.getImageData(0, 0, L, L).data;
+  const lin = (v: number) => Math.pow(v / 255, 2.2);
+  const lumAt = (u: number, v: number) => {
+    const x = Math.min(L - 1, Math.max(0, Math.floor((u - Math.floor(u)) * L)));
+    const y = Math.min(L - 1, Math.max(0, Math.floor((1 - (v - Math.floor(v))) * L)));
+    const k = (y * L + x) * 4;
+    return 0.2126 * lin(px[k]) + 0.7152 * lin(px[k + 1]) + 0.0722 * lin(px[k + 2]);
+  };
+  const gClass = new Float32Array(n), gA = new Float32Array(n * 4), gKind = new Float32Array(n), gLum = new Float32Array(n), gLen = new Float32Array(n);
+  const bv = new Vector3(), r = new Vector3();
+  for (let i = 0; i < n; i++) {
+    let best = 0, bw = -1;
+    for (let k = 0; k < 4; k++) {
+      const w = SW.getComponent(i, k);
+      if (w > bw) (bw = w), (best = SI.getComponent(i, k));
+    }
+    const bn = names[best] || "";
+    const cls = !onBody[i] || /Hand|Finger|Head/.test(bn) ? 0 : /Foot|Toe/.test(bn) ? 3 : /Thigh|Calf/.test(bn) ? 2 : 1;
+    gClass[i] = cls;
+    gLum[i] = Math.max(0.01, lumAt(UV.getX(i), UV.getY(i)));
+    bv.set(P.getX(i), P.getY(i), P.getZ(i)).applyMatrix4(a.bindMatrix);
+    const isArm = /UpperArm|Forearm/.test(bn);
+    if (isArm) {
+      const arm = arms[bn.includes("_L_") ? 0 : 1];
+      const t = r.copy(bv).sub(arm.ua).dot(arm.dir);
+      r.copy(bv).sub(arm.ua).addScaledVector(arm.dir, -t);
+      gA.set([r.dot(arm.side), t, r.dot(arm.up), t], i * 4);
+      gKind[i] = 1;
+      gLen[i] = arm.len;
+    } else {
+      gA.set([bv.x - cx, bv.y, bv.z - cz, -1], i * 4);
+      gKind[i] = 0;
+    }
+  }
+  geo.setAttribute("gClass", new Float32BufferAttribute(gClass, 1));
+  geo.setAttribute("gA", new Float32BufferAttribute(gA, 4));
+  geo.setAttribute("gKind", new Float32BufferAttribute(gKind, 1));
+  geo.setAttribute("gLum", new Float32BufferAttribute(gLum, 1));
+  geo.setAttribute("gLen", new Float32BufferAttribute(gLen, 1));
+  mesh.geometry = geo;
+
+  const rep = { termeh: 0.45, suzani: 0.3, ikat: 0.4, wool: 0.62, roundel: 0.56 }[c.fabric.kind];
+  const uniforms = {
+    uFabric: { value: fabricTexture(c.fabric) },
+    uRep: { value: rep },
+    uTrimC: { value: new Color(c.trim).convertSRGBToLinear() },
+    uTirazC: { value: new Color(c.tiraz || c.trim).convertSRGBToLinear() },
+    uTrouser: { value: new Color(c.trousers || "#2a2320").convertSRGBToLinear() },
+    uShoe: { value: new Color("#3b2416").convertSRGBToLinear() },
+    uNeckY: { value: neck.y },
+  };
+  const m = bodyMat.clone();
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, uniforms);
+    sh.vertexShader = sh.vertexShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nattribute float gClass;\nattribute vec4 gA;\nattribute float gKind;\nattribute float gLum;\nattribute float gLen;\nvarying float vGClass;\nvarying vec4 vGA;\nvarying float vGKind;\nvarying float vGLum;\nvarying float vGLen;",
+      )
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvGClass = gClass;\nvGA = gA;\nvGKind = gKind;\nvGLum = gLum;\nvGLen = gLen;");
+    sh.fragmentShader = sh.fragmentShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nuniform sampler2D uFabric;\nuniform float uRep;\nuniform vec3 uTrimC;\nuniform vec3 uTirazC;\nuniform vec3 uTrouser;\nuniform vec3 uShoe;\nuniform float uNeckY;\nvarying float vGClass;\nvarying vec4 vGA;\nvarying float vGKind;\nvarying float vGLum;\nvarying float vGLen;",
+      )
+      .replace(
+        "#include <map_fragment>",
+        `#include <map_fragment>
+        #ifdef USE_MAP
+        if (vGClass > 0.5) {
+          // the original cloth's folds and seams survive as relative brightness
+          float lum = dot(sampledDiffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+          float shade = pow(clamp(lum / max(vGLum, 0.01), 0.45, 1.7), 0.6);
+          vec3 cloth;
+          if (vGClass > 2.5) cloth = uShoe; // soft leather shoes
+          else if (vGClass > 1.5) cloth = uTrouser; // plain wool trousers
+          else {
+            bool armK = vGKind > 0.5;
+            // silk projected round the torso / round the arm, in 9 cm units like the skirt
+            vec2 fuv = armK ? vec2(atan(vGA.z, vGA.x) * 5.0, vGA.y) / 9.0 : vec2(atan(vGA.x, vGA.z) * 15.0, vGA.y) / 9.0;
+            cloth = texture2D(uFabric, fuv * uRep).rgb;
+            float trim = 0.0, tiraz = 0.0;
+            if (armK) {
+              trim = step(vGLen - 5.0, vGA.w);                           // cuffs
+              tiraz = step(9.5, vGA.w) * (1.0 - step(13.5, vGA.w));      // tiraz band
+            } else {
+              trim = step(uNeckY - 2.5, vGA.y);                          // collar
+              trim = max(trim, (1.0 - step(1.1, abs(vGA.x))) * step(0.0, vGA.z) * step(uNeckY - 60.0, vGA.y)); // placket
+            }
+            cloth = mix(cloth, uTirazC, tiraz);
+            cloth = mix(cloth, uTrimC, trim);
+          }
+          diffuseColor.rgb = cloth * shade;
+        }
+        #endif`,
+      );
+  };
+  m.customProgramCacheKey = () => "fm-redress";
+  mesh.material = mats.map((x) => (x === bodyMat ? m : x)) as any;
 }
 
 export interface CostumeHandle {
@@ -728,7 +891,7 @@ export function costumeMesh(a: AvatarAsset, c: Costume, like: SkinnedMesh, shado
     roughness: 0.9,
     metalness: 0,
     envMapIntensity: 0.6,
-    sheen: c.fabric?.kind === "termeh" || c.fabric?.kind === "roundel" ? 0.6 : 0.3,
+    sheen: c.fitted ? 0.12 : c.fabric?.kind === "termeh" || c.fabric?.kind === "roundel" ? 0.6 : 0.3,
     sheenRoughness: 0.55,
     sheenColor: new Color(c.fabric?.kind === "termeh" || c.fabric?.kind === "roundel" ? "#ffe2a0" : "#fff4e0"),
     normalMap: weave,

@@ -44,8 +44,8 @@ export const FIGURES: HistoricalFigure[] = [
       length: "ankle",
       open: 0,
       sleeve: "tailored",
+      fitted: true,
     },
-    seated: true,
     spot: "pool",
     verses: [
       {
@@ -79,10 +79,10 @@ export const FIGURES: HistoricalFigure[] = [
     avatar: "Male_Adult_15",
     name: { fa: "ابوعلی سینا", en: "Avicenna (Ibn Sina)" },
     epithet: { fa: "پزشک و فیلسوف، نویسندهٔ «قانون در طب» · ۹۸۰–۱۰۳۷ میلادی", en: "Physician & philosopher, author of The Canon of Medicine · 980–1037" },
-    // green pearl-roundel silk, crimson sharbush with a sable brim and a gold plate
+    // green termeh (Yazd brocade with boteh), crimson sharbush with a sable brim and a gold plate
     costume: {
       cloak: "#1f3a2c",
-      fabric: { kind: "roundel", ground: "#1d3a2b", colors: ["#b8913f", "#2c4d3a", "#d8b062", "#e8dcc4"] },
+      fabric: { kind: "termeh", ground: "#1b3528", colors: ["#b8913f", "#6e2a25", "#d8c8a0", "#c9a24a"] },
       trim: "#c9a24a",
       tiraz: "#c9a24a",
       sash: "#6e2c25",
@@ -92,6 +92,7 @@ export const FIGURES: HistoricalFigure[] = [
       length: "ankle",
       open: 0,
       sleeve: "tailored",
+      fitted: true,
     },
     spot: /herb|سبزی|green|mint|basil|ریحان|نعناع/i,
     verses: [
@@ -133,6 +134,7 @@ export const FIGURES: HistoricalFigure[] = [
       length: "ankle",
       open: 0,
       sleeve: "tailored",
+      fitted: true,
     },
     spot: /fruit|orchard|میوه|apple|سیب/i,
     verses: [
