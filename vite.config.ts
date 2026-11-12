@@ -82,6 +82,16 @@ export default ({mode}: any) => {
     base: baseURL,
 
     plugins: [
+      // mapbox-gl 3.x no longer exports setRTLTextPlugin (RTL is built in); route the bare
+      // import through a shim so the storefront's map module doesn't throw (helpers/mapbox-gl-compat.ts)
+      {
+        name: "mapbox-gl-compat",
+        enforce: "pre",
+        async resolveId(source, importer) {
+          if (source !== "mapbox-gl" || importer?.replace(/\\/g, "/").endsWith("helpers/mapbox-gl-compat.ts")) return null;
+          return path.resolve(__dirname, "helpers/mapbox-gl-compat.ts");
+        },
+      },
       vue(),
    //   vuetify({ autoImport: true }), tree shaking problem in dynamic components in page builder (vSheet works but v-sheet not!)
 
