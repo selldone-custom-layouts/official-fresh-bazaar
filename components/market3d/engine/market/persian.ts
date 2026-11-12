@@ -38,6 +38,7 @@ import { heightToNormalCanvas, makeCanvas, toTexture } from "../util/textures";
 import { NOISE, Rng, clamp } from "../util/noise";
 import { canvasPattern, EnvAssets, pbr, PBRSet } from "./realism";
 import { buildCypresses } from "./cypress";
+import { buildFountain } from "./fountain";
 
 // ───────────────────────────── palettes ─────────────────────────────
 const TURQ = "#1a9aa6";
@@ -496,6 +497,8 @@ export interface PersianOptions {
   quality: "low" | "medium" | "high";
   stallAnchors: Array<{ center: Vector3; normal: Vector3 }>;
   assets?: EnvAssets;
+  sunDir?: Vector3;
+  pixelHeight?: () => number;
 }
 
 export function buildPersianBazaar(o: PersianOptions): PersianBuild {
@@ -727,80 +730,19 @@ export function buildPersianBazaar(o: PersianOptions): PersianBuild {
   mosque.traverse((c: any) => c.isMesh && (c.castShadow = false));
   group.add(mosque);
 
-  // ── Central howz (pool) with a fountain
+  // ── Central howz (pool) with a fountain — see fountain.ts
   const obstacles: Array<{ c: Vector3; r: number }> = [];
-  const pool = new Group();
   const PR = 1.7;
-  const marble = sets.marble_01;
-  const rim = new Mesh(
-    lathe([[PR - 0.2, 0], [PR + 0.05, 0], [PR + 0.12, 0.38], [PR + 0.12, 0.46], [PR - 0.12, 0.46], [PR - 0.14, 0.12]], 8, 4),
-    marble ? pbr(marble, [6, 1], { color: new Color("#e6dccb") }) : new MeshStandardMaterial({ color: "#9a7e5c", roughness: 0.8 }),
-  );
-  rim.castShadow = shadows;
-  rim.receiveShadow = true;
-  pool.add(rim);
-  const tiles = tileTexture("star");
-  tiles.repeat.set(8, 1);
-  const inner = new Mesh(new CylinderGeometry(PR - 0.14, PR - 0.16, 0.42, 8, 1, true), new MeshStandardMaterial({ map: tiles, side: DoubleSide, roughness: 0.4 }));
-  inner.position.y = 0.21;
-  pool.add(inner);
-  const floor = new Mesh(new CircleGeometry(PR - 0.14, 8), new MeshStandardMaterial({ color: TURQ, roughness: 0.4 }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0.04;
-  pool.add(floor);
-  // water: deep teal, mirror-like (reflects the real sky), with drifting ripples
-  const ripples = rippleNormal();
-  ripples.repeat.set(2.2, 2.2);
-  const waterMat = new MeshPhysicalMaterial({
-    color: "#0e4f55",
-    roughness: 0.03,
-    metalness: 0,
-    transparent: true,
-    opacity: 0.8,
-    normalMap: ripples,
-    normalScale: new Vector2(0.28, 0.28),
-    envMapIntensity: 1.35,
-    ior: 1.33,
-    specularIntensity: 1,
-  });
-  const water = new Mesh(new CircleGeometry(PR - 0.14, 8), waterMat);
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = 0.36;
-  pool.add(water);
-  const spout = new Mesh(
-    merge([
-      transformed(new CylinderGeometry(0.09, 0.13, 0.62, 16), [0, 0.31, 0]),
-      transformed(new SphereGeometry(0.1, 16, 10), [0, 0.68, 0]),
-      transformed(new CylinderGeometry(0.025, 0.04, 0.3, 10), [0, 0.86, 0]),
-    ]),
+  const fountain = buildFountain({
+    radius: PR,
+    shadows,
+    quality: o.quality,
+    marble: sets.marble_01,
     brass,
-  );
-  pool.add(spout);
-  // fountain: a slim central jet and six thin arcing streams falling into the pool
-  const jetMat = new MeshPhysicalMaterial({ color: "#dff6ff", transparent: true, opacity: 0.55, roughness: 0.04, metalness: 0, clearcoat: 1, depthWrite: false });
-  const streams: BufferGeometry[] = [];
-  const top = new Vector3(0, 1.0, 0);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    const pts: Vector3[] = [];
-    for (let k = 0; k <= 16; k++) {
-      const t = k / 16;
-      const r = t * 0.72;
-      pts.push(new Vector3(Math.cos(a) * r, top.y + 0.32 * Math.sin(Math.PI * t * 0.9) - t * t * 0.62, Math.sin(a) * r));
-    }
-    streams.push(new TubeGeometry(new CatmullRomCurve3(pts), 24, 0.012, 5, false));
-  }
-  const central = new CylinderGeometry(0.006, 0.022, 0.55, 6);
-  central.translate(0, 1.27, 0);
-  streams.push(central);
-  const jet = new Mesh(merge(streams), jetMat);
-  pool.add(jet);
-  // splash rings where the streams land
-  const ripple = new Mesh(new TorusGeometry(0.72, 0.01, 6, 48), new MeshStandardMaterial({ color: "#e8fbff", transparent: true, opacity: 0.5, roughness: 0.1 }));
-  ripple.rotation.x = Math.PI / 2;
-  ripple.position.y = 0.37;
-  pool.add(ripple);
-  group.add(pool);
+    sunDir: o.sunDir || new Vector3(0.5, 0.6, 0.6),
+    pixelHeight: o.pixelHeight || (() => window.innerHeight),
+  });
+  group.add(fountain.group);
   obstacles.push({ c: new Vector3(0, 0, 0), r: PR + 0.2 });
 
   // ── Cypress trees (sarv) flanking the pool and the portal
@@ -831,12 +773,7 @@ export function buildPersianBazaar(o: PersianOptions): PersianBuild {
 
   const update = (t: number) => {
     cypresses.update(t);
-    ripples.offset.set(t * 0.021, t * 0.013);
-    jet.scale.y = 1 + Math.sin(t * 6) * 0.025;
-    jetMat.opacity = 0.5 + Math.sin(t * 9) * 0.06;
-    const rs = 1 + ((t * 0.6) % 1) * 0.35;
-    ripple.scale.set(rs, rs, 1);
-    (ripple.material as MeshStandardMaterial).opacity = 0.5 * (1 - ((t * 0.6) % 1));
+    fountain.update(t);
     glow.emissiveIntensity = 4 + Math.sin(t * 1.7) * 0.12 + Math.sin(t * 4.3) * 0.05; // soft candle breathing, no strobing
   };
   void a2;

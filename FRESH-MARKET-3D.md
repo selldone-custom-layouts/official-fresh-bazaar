@@ -16,6 +16,10 @@ assets, all free for commercial use. The procedural fallbacks keep it working if
   (by the fruit) in period costume (robe, cloak, turban) generated on top of their skeletons. Click one:
   he turns to you and recites (verse card, read aloud when the browser has a Persian or English voice).
   Data and verses: `components/market3d/data/figures.ts`.
+- **The pool** (`engine/market/fountain.ts`) — planar-mirror water (half-resolution reflection, once
+  per frame; off on low quality) with Fresnel, ripple layers, sun glints, analytic ring waves and foam
+  where the streams land; ~3,600 droplets on ballistic arcs over glassy cores; procedural caustics on
+  the tile; goldfish; geraniums in scanned clay pots; a wet line on the marble and damp stone around it.
 - **Catalog** — every product of every category is loaded from the shop (paged); a big category spreads
   over neighbouring stalls under the same sign. The inspection panel shows everything the shop has
   (description, gallery, specs, pros/cons, brand, warranty, SKU, rating, stock, variants).

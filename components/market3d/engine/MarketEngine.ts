@@ -337,6 +337,8 @@ export class MarketEngine {
       shadows,
       quality: this.quality,
       assets: envAssets,
+      sunDir: this.env ? this.env.sun.position.clone().normalize() : undefined,
+      pixelHeight: () => this.renderer.domElement.height,
       stallAnchors: this.stalls.map((st) => ({
         center: new Vector3(0, 0, 0.9).applyMatrix4(st.group.matrixWorld),
         normal: new Vector3(0, 0, 1).applyQuaternion(st.group.quaternion),

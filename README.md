@@ -54,6 +54,7 @@ Everything is read from the shop: categories, titles, images, prices, discounts,
 | Part | What you see |
 | --- | --- |
 | Arrival | A drone shot sweeps down into the courtyard; a soundscape of the fountain, the crowd's murmur and a santur playing in the Shur mode |
+| The pool | An octagonal marble howz with mirror-like water that reflects the arcades, rings spreading where the streams land, foam, moving caustics on the turquoise tile, goldfish, and clay pots of red geraniums on the rim; the streams are thousands of droplets on true ballistic arcs |
 | Stalls | One per category, with the category's image on the sign, awnings, string lights, weathered plank stands, and copper pots, brass trays, wicker baskets and clay pots beside them |
 | Produce | Photo-scanned apples, lemons, limes, kiwis, pomegranates, avocados, onions, ginger and sweet potatoes; about forty other kinds modelled procedurally; any product the engine does not recognise appears as a labelled package with its own photo |
 | Inspection | A studio turntable for the product, beside a panel with the price, discount, stock, variants, quantity, description, gallery, specifications, pros and cons, brand, warranty and SKU, and the real Add to basket |
@@ -66,11 +67,14 @@ Everything is read from the shop: categories, titles, images, prices, discounts,
 
 | | |
 | --- | --- |
-| ![The courtyard with Khayyam by the pool](docs/screenshots/cover.jpg) | ![A vendor greets the visitor](docs/screenshots/vendor.jpg) |
-| ![Crates of real produce with chalkboard prices](docs/screenshots/crates.jpg) | ![Avicenna by the herbs stall](docs/screenshots/avicenna.jpg) |
-| ![Khayyam on the rim of the pool](docs/screenshots/khayyam.jpg) | ![Inspecting a photo-scanned apple](docs/screenshots/ui-product.jpg) |
+| ![The courtyard with Khayyam by the pool](docs/screenshots/cover.jpg) | ![The pool: reflections, caustics, goldfish and geraniums](docs/screenshots/fountain.jpg) |
+| ![A vendor greets the visitor](docs/screenshots/vendor.jpg) | ![Avicenna by the herbs stall](docs/screenshots/avicenna.jpg) |
+| ![Crates of real produce with chalkboard prices](docs/screenshots/crates.jpg) | ![Khayyam on the rim of the pool](docs/screenshots/khayyam.jpg) |
 
-<p align="center"><img src="docs/screenshots/ui-verse.jpg" alt="Khayyam recites a quatrain: English with the Persian original beneath" width="420"></p>
+<p align="center">
+  <img src="docs/screenshots/ui-verse.jpg" alt="Khayyam recites a quatrain: English with the Persian original beneath" width="380">
+  <img src="docs/screenshots/ui-product.jpg" alt="Inspecting a photo-scanned apple" width="380">
+</p>
 
 ## Use it on your shop
 
@@ -114,7 +118,8 @@ Dev-only helpers:
 | Catalog from the shop (every product, paged) | `components/market3d/data/marketCatalog.ts` |
 | Historical figures, verses and sayings | `components/market3d/data/figures.ts` |
 | Engine: renderer, post-processing, walking, picking, dynamic resolution | `components/market3d/engine/MarketEngine.ts` |
-| Architecture, pool, tiles, relief, cypresses | `components/market3d/engine/market/{persian,cypress}.ts` |
+| Architecture, tiles, relief, cypresses | `components/market3d/engine/market/{persian,cypress}.ts` |
+| The pool: reflective water, droplet streams, caustics, goldfish, geraniums | `components/market3d/engine/market/fountain.ts` |
 | Stalls, crates, price tags, sky, plaza, string lights | `components/market3d/engine/market/{stall,crate,environment}.ts` |
 | Photo-scanned materials and HDR sky | `components/market3d/engine/market/realism.ts`, `components/market3d/assets/env/` |
 | Produce models (procedural + photo-scanned) and product → model matching | `components/market3d/engine/produce/` |
