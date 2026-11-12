@@ -16,6 +16,13 @@ assets, all free for commercial use. The procedural fallbacks keep it working if
   (by the fruit) in period costume (robe, cloak, turban) generated on top of their skeletons. Click one:
   he turns to you and recites (verse card, read aloud when the browser has a Persian or English voice).
   Data and verses: `components/market3d/data/figures.ts`.
+- **Catalog** — every product of every category is loaded from the shop (paged); a big category spreads
+  over neighbouring stalls under the same sign. The inspection panel shows everything the shop has
+  (description, gallery, specs, pros/cons, brand, warranty, SKU, rating, stock, variants).
+- **Photo-scanned produce & props** — Poly Haven (CC0) scans for apple, lemon, lime, kiwi, pomegranate,
+  avocado, onion, ginger and sweet potato (≈700-triangle pile LOD with seams locked, full scan on the
+  turntable; `engine/produce/scans.ts`), plus copper pots, brass trays, wicker baskets, clay pots and
+  brass vases around the stalls. Other kinds stay procedural.
 - **Materials & sky** — photo-scanned PBR sets and an HDR afternoon sky from Poly Haven (CC0):
   herringbone brick paving, tan brick facades with real tile relief, straw-mud plaster, weathered
   planks, marble pool rim; card-based cypress trees with wind sway.

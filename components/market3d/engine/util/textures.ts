@@ -625,7 +625,7 @@ export function drawChalkboard(
   (ctx as any).direction = opts.dir || "inherit";
   for (const l of lines) {
     let size = l.size;
-    const fam = l.font || `"Segoe Print", "Bradley Hand", "Comic Sans MS", "Vazirmatn", "Tahoma", cursive`;
+    const fam = l.font || (/[\u0600-\u06FF]/.test(l.text) ? `"lang-fa-iransans", "IRANSans", Tahoma, sans-serif` : `"Segoe Print", "Bradley Hand", "Comic Sans MS", Tahoma, cursive`);
     ctx.font = `${l.weight || "700"} ${size}px ${fam}`;
     while (ctx.measureText(l.text).width > maxW && size > 10) {
       size -= 2;

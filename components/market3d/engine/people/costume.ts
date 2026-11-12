@@ -146,8 +146,9 @@ export function buildCostume(a: AvatarAsset, c: Costume): BufferGeometry {
     }
     // skirt: from the pelvis towards the thigh/calf on the same side
     const side = MathUtils.smoothstep(x - cx, -7, 7); // 1 = left (+x)
-    const k = MathUtils.smoothstep(y, pelvis.y, calfL.y) * 0.72;
-    const k2 = MathUtils.smoothstep(y, calfL.y, footL.y) * 0.3;
+    // follow the legs firmly (a seated figure's robe drapes over thighs and shins, never through them)
+    const k = MathUtils.smoothstep(y, pelvis.y, calfL.y) * 0.9;
+    const k2 = MathUtils.smoothstep(y, calfL.y + 6, footL.y + 12) * 0.85;
     const L = "Bip01_L_", R = "Bip01_R_";
     return [
       [idx("Bip01_Pelvis"), 1 - k],

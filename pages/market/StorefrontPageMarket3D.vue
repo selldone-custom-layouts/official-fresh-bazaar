@@ -62,18 +62,19 @@
     <div
       v-if="hoverProduct && !selected"
       class="fm3d__tip"
+      :class="{ flip: tipFlip }"
       :style="{ left: hover.x + 'px', top: hover.y + 'px' }"
     >
       <b>{{ hoverProduct.title }}</b>
-      <em v-if="hoverProduct.title_en && hoverProduct.title_en !== hoverProduct.title" dir="auto">{{ hoverProduct.title_en }}</em>
+      <em v-if="hoverProduct.title_en && hoverProduct.title_en !== hoverProduct.title" dir="auto" class="fm-fa">{{ hoverProduct.title_en }}</em>
       <span>{{ hoverProduct.price }}<template v-if="hoverProduct.unit"> / {{ hoverProduct.unit }}</template></span>
       <small>{{ T("inspect") }}</small>
     </div>
 
     <!-- ── Historical figure hover label -->
-    <div v-if="hoverFigure && !selected && !verse" class="fm3d__tip fm3d__tip--figure" :style="{ left: hover.x + 'px', top: hover.y + 'px' }">
-      <b dir="rtl">{{ hoverFigure.name.fa }}</b>
-      <em>{{ hoverFigure.name.en }}</em>
+    <div v-if="hoverFigure && !selected && !verse" class="fm3d__tip fm3d__tip--figure" :class="{ flip: tipFlip }" :style="{ left: hover.x + 'px', top: hover.y + 'px' }">
+      <b>{{ hoverFigure.name.en }}</b>
+      <em dir="rtl" class="fm-fa">{{ hoverFigure.name.fa }}</em>
       <small>{{ T("listen") }}</small>
     </div>
 
@@ -82,18 +83,19 @@
       <div v-if="verse && verseFigure" class="fm3d__verse" :class="{ poem: verseItem.kind === 'poem' }" @pointerdown.stop>
         <button class="fm3d__verse-x" :aria-label="T('back')" @click="closeVerse">×</button>
         <div class="fm3d__verse-who">
-          <b dir="rtl">{{ verseFigure.name.fa }}</b>
-          <span>{{ verseFigure.name.en }}</span>
-          <small :dir="locale === 'fa' ? 'rtl' : 'ltr'">{{ locale === "fa" ? verseFigure.epithet.fa : verseFigure.epithet.en }}</small>
+          <b>{{ verseFigure.name.en }}</b>
+          <span dir="rtl" class="fm-fa">{{ verseFigure.name.fa }}</span>
+          <small>{{ verseFigure.epithet.en }}</small>
+          <small dir="rtl" class="fm-fa">{{ verseFigure.epithet.fa }}</small>
         </div>
-        <div class="fm3d__verse-fa" dir="rtl">
-          <p v-for="(l, i) in verseItem.fa" :key="'fa' + i" :class="{ on: i <= verse.line }">{{ l }}</p>
-        </div>
-        <div v-if="locale !== 'fa'" class="fm3d__verse-en">
-          <p v-for="(l, i) in verseItem.en" :key="'en' + i" :class="{ on: i <= verse.line }">{{ l }}</p>
+        <div class="fm3d__verse-lines">
+          <div v-for="(l, i) in verseItem.en" :key="i" class="fm3d__verse-line" :class="{ on: i <= verse.line }">
+            <p class="en">{{ l }}</p>
+            <p v-if="verseItem.fa[i]" class="fm-fa" dir="rtl">{{ verseItem.fa[i] }}</p>
+          </div>
         </div>
         <div class="fm3d__verse-foot">
-          <span :dir="locale === 'fa' ? 'rtl' : 'ltr'">{{ locale === "fa" ? verseItem.source.fa : verseItem.source.en }}</span>
+          <span>{{ verseItem.source.en }} <i dir="rtl" class="fm-fa">· {{ verseItem.source.fa }}</i></span>
           <button @click="openVerse(verse.id, true)">{{ T("another") }} ›</button>
         </div>
       </div>
@@ -110,7 +112,7 @@
       >
         <img v-if="s.image" :src="s.image" alt="" />
         <span v-else class="fm3d__stall-dot" :style="{ background: stallColor(i) }"></span>
-        {{ s.title }}
+        {{ s.title }}<small v-if="s.parts > 1" class="fm3d__stall-part">{{ s.part }}</small>
       </button>
     </nav>
 
@@ -218,6 +220,12 @@ export default {
     },
     currentStallTitle(): string {
       return this.stalls[this.currentStall]?.title || "";
+    },
+    /** keep tooltips on screen: open them to the left of the pointer near the right edge */
+    tipFlip(): boolean {
+      if (!this.hover) return false;
+      const w = (this.$el as HTMLElement)?.clientWidth || window.innerWidth;
+      return this.hover.x > w - 300;
     },
     hoverFigure(): any {
       if (!this.hover || this.hover.type !== "figure") return null;
@@ -382,16 +390,19 @@ export default {
         const synth = window.speechSynthesis;
         if (!synth || this.muted) return false;
         const voices = synth.getVoices();
-        const fa = voices.find((v) => /^fa/i.test(v.lang));
-        const en = voices.find((v) => /^en/i.test(v.lang) && /male|david|guy|ryan|george|daniel|christopher|eric/i.test(v.name)) || voices.find((v) => /^en/i.test(v.lang));
-        const voice = fa || en;
+        // English is the primary text; a deep, unhurried English voice reads it
+        const en =
+          voices.find((v) => /^en/i.test(v.lang) && /(male|david|guy|ryan|george|daniel|christopher|eric|davis|andrew|brian)/i.test(v.name) && !/female/i.test(v.name)) ||
+          voices.find((v) => /^en-(GB|US)/i.test(v.lang)) ||
+          voices.find((v) => /^en/i.test(v.lang));
+        const voice = en;
         if (!voice) return false;
-        const lines: string[] = fa ? item.fa : item.en;
+        const lines: string[] = item.en;
         lines.forEach((l, i) => {
           const u = new SpeechSynthesisUtterance(l);
           u.voice = voice;
           u.lang = voice.lang;
-          u.rate = fa ? 0.8 : 0.86;
+          u.rate = 0.86;
           u.pitch = 0.78;
           u.onstart = () => this.verse && (this.verse.line = i);
           synth.speak(u);
@@ -444,6 +455,8 @@ export default {
         id: s.id,
         name: s.name,
         title: s.title,
+        part: s.part || 1,
+        parts: s.parts || 1,
         image: s.image ? (/^https?:/.test(s.image) ? s.image : this.getShopImagePath(s.image, 128)) : null,
         more: Math.max(0, (s.total || 0) - s.products.length),
         products: s.products.map((p: any) => {
@@ -796,6 +809,19 @@ export default {
   gap: 2px;
   min-width: 140px;
 }
+.fm3d__tip.flip {
+  transform: translate(calc(-100% - 16px), 16px);
+}
+.fm3d__tip b,
+.fm3d__tip em,
+.fm3d__tip span,
+.fm3d__tip small {
+  white-space: nowrap;
+}
+.fm3d__tip .fm-fa {
+  font-family: "lang-fa-iransans", "IRANSans", Tahoma, "Segoe UI", sans-serif;
+  font-style: normal;
+}
 .fm3d.rtl .fm3d__tip {
   transform: translate(calc(-100% - 16px), 16px);
 }
@@ -803,7 +829,20 @@ export default {
   font-size: 15px;
 }
 .fm3d__tip--figure b {
-  font-size: 17px;
+  font-size: 16px;
+}
+.fm3d__tip--figure em.fm-fa {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a6a3a;
+}
+.fm3d__stall-part {
+  margin-inline-start: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* verse card — a historical figure recites */
@@ -857,53 +896,60 @@ export default {
   text-align: center;
 }
 .fm3d__verse-who b {
-  font-size: 19px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
   color: #e9c46a;
-}
-.fm3d__verse-who span {
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.8;
+  letter-spacing: 0.01em;
 }
 .fm3d__verse-who small {
   font-size: 11.5px;
-  opacity: 0.62;
+  opacity: 0.7;
 }
-.fm3d__verse-fa {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px 26px;
-  font-family: "IranNastaliq", "Noto Nastaliq Urdu", "Vazirmatn", "B Nazanin", Tahoma, serif;
-  font-size: 22px;
-  line-height: 1.9;
+.fm3d__verse .fm-fa {
+  font-family: "lang-fa-iransans", "IRANSans", Tahoma, "Segoe UI", sans-serif;
+  word-spacing: normal;
+  letter-spacing: 0;
+  font-style: normal;
+}
+.fm3d__verse-who span.fm-fa {
+  font-size: 13px;
+  opacity: 0.75;
+}
+.fm3d__verse-who small.fm-fa {
+  font-size: 10.5px;
+  opacity: 0.5;
+}
+.fm3d__verse-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   text-align: center;
 }
-.fm3d__verse.poem .fm3d__verse-fa {
-  grid-template-columns: 1fr 1fr;
-}
-.fm3d__verse-fa p,
-.fm3d__verse-en p {
-  margin: 0;
+.fm3d__verse-line {
   opacity: 0.18;
   transform: translateY(4px);
   transition: opacity 0.9s ease, transform 0.9s ease;
 }
-.fm3d__verse-fa p.on,
-.fm3d__verse-en p.on {
+.fm3d__verse-line.on {
   opacity: 1;
   transform: none;
 }
-.fm3d__verse-en {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(218, 176, 92, 0.25);
+.fm3d__verse-line p {
+  margin: 0;
+}
+.fm3d__verse-line .en {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
-  font-size: 14px;
-  line-height: 1.55;
-  text-align: center;
-  color: rgba(246, 236, 214, 0.86);
+  font-size: 17px;
+  line-height: 1.45;
+  color: #f6ecd6;
+}
+.fm3d__verse-line .fm-fa {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.75;
+  text-wrap: balance;
+  color: rgba(233, 196, 106, 0.72);
 }
 .fm3d__verse-foot {
   display: flex;
@@ -930,23 +976,13 @@ export default {
   opacity: 0;
   transform: translate(-50%, 18px);
 }
-@media (max-width: 760px) {
-  .fm3d__verse.poem .fm3d__verse-fa {
-    grid-template-columns: 1fr;
-    gap: 0;
-    line-height: 1.75;
-  }
-  .fm3d__verse-fa {
-    font-size: 19px;
-  }
-}
 @media (max-width: 600px) {
   .fm3d__verse {
     bottom: 84px;
     padding: 16px 14px 12px;
   }
-  .fm3d__verse-fa {
-    font-size: 17px;
+  .fm3d__verse-line .en {
+    font-size: 15px;
   }
 }
 .fm3d__tip em {

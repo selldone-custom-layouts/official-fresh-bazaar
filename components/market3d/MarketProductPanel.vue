@@ -9,18 +9,24 @@
     </button>
 
     <div class="fm-panel__head">
-      <div class="fm-panel__thumb" v-if="image">
-        <img :src="image" :alt="title" loading="lazy" />
+      <div class="fm-panel__thumb" v-if="shownImage">
+        <img :src="shownImage" :alt="title" loading="lazy" @error="onImageError" />
       </div>
       <div class="fm-panel__titles">
         <div class="fm-panel__stall">{{ stallTitle }}</div>
         <h2 class="fm-panel__title">{{ title }}</h2>
         <div v-if="subtitle" class="fm-panel__subtitle" dir="auto">{{ subtitle }}</div>
-        <div v-if="full && full.rate" class="fm-panel__rate">
-          <span v-for="i in 5" :key="i" :class="{ on: i <= Math.round(full.rate) }">★</span>
-          <small>{{ Number(full.rate).toFixed(1) }}</small>
+        <div v-if="p.rate" class="fm-panel__rate">
+          <span v-for="i in 5" :key="i" :class="{ on: i <= Math.round(p.rate) }">★</span>
+          <small>{{ Number(p.rate).toFixed(1) }}<template v-if="p.rate_count"> · {{ p.rate_count }} {{ T("reviews") }}</template></small>
         </div>
       </div>
+    </div>
+
+    <div v-if="gallery.length > 1" class="fm-panel__gallery">
+      <button v-for="(g, i) in gallery" :key="g.thumb" :class="{ active: i === galleryIndex }" @click="galleryIndex = i">
+        <img :src="g.thumb" alt="" loading="lazy" />
+      </button>
     </div>
 
     <div class="fm-panel__price">
@@ -31,7 +37,12 @@
     </div>
 
     <div class="fm-panel__stock" :class="{ out: soldOut }">
-      <span class="fm-dot"></span>{{ soldOut ? T("sold_out") : T("in_stock") }}
+      <span class="fm-dot"></span>{{ soldOut ? T("sold_out") : stock !== null && stock <= 10 ? T("only_left").replace("{n}", String(stock)) : T("in_stock") }}
+    </div>
+
+    <div v-if="description" class="fm-panel__desc" :class="{ open: descOpen }" dir="auto">
+      <p>{{ description }}</p>
+      <button v-if="description.length > 180" class="fm-link" @click="descOpen = !descOpen">{{ descOpen ? T("less") : T("more") }}</button>
     </div>
 
     <div v-if="variants.length" class="fm-panel__variants">
@@ -73,6 +84,23 @@
       </template>
     </button>
 
+    <div v-if="facts.length" class="fm-panel__facts">
+      <div v-for="f in facts" :key="f.label"><span>{{ f.label }}</span><b dir="auto">{{ f.value }}</b></div>
+    </div>
+
+    <div v-if="specRows.length" class="fm-panel__spec">
+      <div class="fm-panel__label">{{ T("specs") }}</div>
+      <template v-for="(r, i) in specRows" :key="i">
+        <div v-if="r.group" class="fm-panel__spec-group" dir="auto">{{ r.group }}</div>
+        <div v-else class="fm-panel__spec-row"><span dir="auto">{{ r.k }}</span><b dir="auto">{{ r.v }}</b></div>
+      </template>
+    </div>
+
+    <div v-if="pros.length || cons.length" class="fm-panel__proscons">
+      <ul v-if="pros.length" class="pros"><li v-for="(x, i) in pros" :key="'p' + i" dir="auto">{{ x }}</li></ul>
+      <ul v-if="cons.length" class="cons"><li v-for="(x, i) in cons" :key="'c' + i" dir="auto">{{ x }}</li></ul>
+    </div>
+
     <router-link class="fm-panel__details" :to="{ name: productRoute, params: { product_id: product.id } }">
       {{ T("details") }} ›
     </router-link>
@@ -105,6 +133,9 @@ export default {
     variant: null as any,
     count: 1,
     busy: false,
+    galleryIndex: 0,
+    descOpen: false,
+    failed: {} as Record<string, boolean>,
   }),
   computed: {
     p(): any {
@@ -115,6 +146,80 @@ export default {
     },
     image(): string | null {
       return this.p.icon ? this.getShopImagePath(this.p.icon, 128) : null;
+    },
+    /** main image + gallery from the shop (original size, falling back to the CDN thumbnail) */
+    gallery(): Array<{ full: string; thumb: string }> {
+      const paths: string[] = [];
+      const add = (x: any) => {
+        const path = typeof x === "string" ? x : x?.path || x?.src || x?.image;
+        if (path && !paths.includes(path)) paths.push(path);
+      };
+      add(this.p.icon);
+      (this.full?.images || []).forEach(add);
+      return paths.map((path) => ({ full: /^https?:/.test(path) ? path : this.getShopImagePath(path), thumb: /^https?:/.test(path) ? path : this.getShopImagePath(path, 128) }));
+    },
+    shownImage(): string | null {
+      const g = this.gallery[this.galleryIndex] || this.gallery[0];
+      if (!g) return null;
+      return this.failed[g.full] ? g.thumb : g.full;
+    },
+    description(): string {
+      const body = this.full?.article_pack?.article?.body || this.full?.article?.body || "";
+      if (!body) return "";
+      try {
+        const doc = new DOMParser().parseFromString(String(body), "text/html");
+        return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+      } catch (e) {
+        return String(body).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      }
+    },
+    facts(): Array<{ label: string; value: string }> {
+      const f = this.full || {};
+      const out: Array<{ label: string; value: string }> = [];
+      const txt = (v: any) => (v == null ? "" : typeof v === "object" ? v.title || v.name || "" : String(v));
+      if (txt(f.brand)) out.push({ label: this.T("brand"), value: txt(f.brand) });
+      if (f.condition && f.condition !== "new") out.push({ label: this.T("condition"), value: String(f.condition) });
+      if (txt(f.warranty)) out.push({ label: this.T("warranty"), value: txt(f.warranty) });
+      if (Number(f.return_warranty) > 0) out.push({ label: this.T("returns"), value: this.T("days").replace("{n}", String(f.return_warranty)) });
+      if (f.sku) out.push({ label: "SKU", value: String(f.sku) });
+      return out;
+    },
+    /** specification table, whatever shape the shop stored it in */
+    specRows(): Array<{ group?: string; k?: string; v?: string }> {
+      const spec = this.full?.spec;
+      if (!spec) return [];
+      const rows: Array<{ group?: string; k?: string; v?: string }> = [];
+      const val = (v: any): string => (Array.isArray(v) ? v.map(val).join(", ") : v && typeof v === "object" ? v.value ?? v.title ?? JSON.stringify(v) : String(v ?? ""));
+      const walk = (s: any) => {
+        if (Array.isArray(s))
+          s.forEach((it) => {
+            if (Array.isArray(it) && it.length >= 2) rows.push({ k: String(it[0]), v: val(it[1]) });
+            else if (it && typeof it === "object") {
+              if (it.type === "group" || (it.group && !("value" in it))) rows.push({ group: String(it.title || it.group) });
+              else if ("value" in it || "values" in it) rows.push({ k: String(it.key ?? it.title ?? it.name ?? ""), v: val(it.value ?? it.values) });
+              else walk(it.items || it.children || []);
+              if (Array.isArray(it.items)) walk(it.items);
+            }
+          });
+        else if (s && typeof s === "object")
+          Object.entries(s).forEach(([k, v]) => {
+            if (v && typeof v === "object" && !Array.isArray(v)) {
+              rows.push({ group: k });
+              walk(v);
+            } else if (Array.isArray(v) && v.some((x) => x && typeof x === "object")) {
+              rows.push({ group: k });
+              walk(v);
+            } else rows.push({ k, v: val(v) });
+          });
+      };
+      walk(spec);
+      return rows.filter((r) => r.group || (r.k && r.v));
+    },
+    pros(): string[] {
+      return this.list(this.full?.pros);
+    },
+    cons(): string[] {
+      return this.list(this.full?.cons);
     },
     subtitle(): string | null {
       const t = this.p.title_en;
@@ -175,6 +280,8 @@ export default {
         this.full = null;
         this.variant = null;
         this.count = 1;
+        this.galleryIndex = 0;
+        this.descOpen = false;
         this.fetch();
       },
     },
@@ -200,6 +307,15 @@ export default {
       } catch (e) {
         /* keep list data */
       }
+    },
+    list(x: any): string[] {
+      if (!x) return [];
+      const arr = Array.isArray(x) ? x : typeof x === "string" ? x.split(/\n+/) : Object.values(x);
+      return arr.map((i: any) => (typeof i === "string" ? i : i?.text || i?.title || i?.value || "")).map((s: string) => s.trim()).filter(Boolean);
+    },
+    onImageError() {
+      const g = this.gallery[this.galleryIndex] || this.gallery[0];
+      if (g) this.failed = { ...this.failed, [g.full]: true };
     },
     variantLabel(v: any): string {
       const parts = [v.volume, v.weight, v.pack, v.type, v.style].filter(Boolean);
@@ -292,6 +408,102 @@ export default {
 .fm-panel__close:hover {
   background: rgba(60, 36, 16, 0.16);
 }
+.fm-panel__gallery {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+.fm-panel__gallery button {
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #fff;
+  cursor: pointer;
+}
+.fm-panel__gallery button.active {
+  border-color: #1a8f9a;
+}
+.fm-panel__gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fm-panel__desc {
+  margin: 10px 0 4px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #4a3424;
+}
+.fm-panel__desc p {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fm-panel__desc.open p {
+  -webkit-line-clamp: unset;
+}
+.fm-panel__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin: 14px 0 4px;
+  font-size: 12.5px;
+}
+.fm-panel__facts div {
+  display: flex;
+  flex-direction: column;
+}
+.fm-panel__facts span {
+  color: #9a6a3a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fm-panel__spec {
+  margin-top: 14px;
+  font-size: 12.5px;
+}
+.fm-panel__spec-group {
+  margin-top: 8px;
+  font-weight: 800;
+  color: #6a4426;
+}
+.fm-panel__spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(106, 68, 38, 0.18);
+}
+.fm-panel__spec-row span {
+  color: #7a5a3e;
+}
+.fm-panel__proscons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12.5px;
+}
+.fm-panel__proscons ul {
+  margin: 0;
+  padding-inline-start: 16px;
+}
+.fm-panel__proscons .pros li::marker {
+  content: "+ ";
+  color: #237a42;
+}
+.fm-panel__proscons .cons li::marker {
+  content: "− ";
+  color: #b5322b;
+}
 .fm-panel__head {
   display: flex;
   gap: 14px;
@@ -330,7 +542,7 @@ export default {
   font-size: 15px;
   font-weight: 700;
   color: #1a8f9a;
-  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  font-family: "lang-fa-iransans", "IRANSans", Tahoma, "Segoe UI", sans-serif;
 }
 .fm-panel__rate {
   color: #d0b090;

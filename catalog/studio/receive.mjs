@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const ALLOWED = /^catalog\/(photos\/[a-z0-9-]+\.jpg|brand\/logo\.png)$/;
+const ALLOWED = /^(catalog\/(photos\/[a-z0-9-]+\.jpg|brand\/logo\.png)|docs\/screenshots\/[a-z0-9-]+\.jpg)$/;
 
 http
   .createServer((req, res) => {

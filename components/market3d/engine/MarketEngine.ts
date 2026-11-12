@@ -6,6 +6,7 @@
  */
 import {
   ACESFilmicToneMapping,
+  NeutralToneMapping,
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
@@ -33,6 +34,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { buildEnvironment, disposeObject, EnvBuild } from "./market/environment";
 import { buildPersianBazaar, PersianBuild } from "./market/persian";
@@ -41,6 +43,7 @@ import { PeopleLibrary, peopleAssetsAvailable, ROSTER } from "./people/library";
 import { Person } from "./people/person";
 import { Character, Outfit } from "./people/characters";
 import { loadEnvAssets } from "./market/realism";
+import { disposeScans, loadScans, propScan, PropId } from "./produce/scans";
 import { FIGURES } from "../data/figures";
 import { CylinderGeometry as FigureHitGeometry, Mesh as FigureHitMesh, MeshBasicMaterial as FigureHitMaterial } from "three";
 import { Ambience } from "./audio/ambience";
@@ -159,8 +162,9 @@ export class MarketEngine {
     this.quality = quality || detectQuality();
     this.renderer = new WebGLRenderer({ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false });
     this.renderer.outputColorSpace = SRGBColorSpace;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.95;
+    // Khronos PBR Neutral: the tone mapper made for product rendering — true produce colours, soft highlights
+    this.renderer.toneMapping = NeutralToneMapping;
+    this.renderer.toneMappingExposure = 0.92;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.setClearColor(new Color("#d9b48e"));
@@ -203,6 +207,26 @@ export class MarketEngine {
     this.bloom = new UnrealBloomPass(new Vector2(w, h), 0.22, 0.12, 2.8);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
+    // cinematic finish: gentle vignette + soft S-curve with warm highlights (no grain → no flicker)
+    this.composer.addPass(
+      new ShaderPass({
+        uniforms: { tDiffuse: { value: null }, uVignette: { value: 0.22 } },
+        vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+        fragmentShader: `uniform sampler2D tDiffuse; uniform float uVignette; varying vec2 vUv;
+          void main(){
+            vec4 c = texture2D(tDiffuse, vUv);
+            vec3 x = c.rgb;
+            // soft S-curve around mid grey
+            x = mix(x, x * x * (3.0 - 2.0 * x), 0.18);
+            // warm the highlights, cool the shadows a touch
+            float l = dot(x, vec3(0.2126, 0.7152, 0.0722));
+            x += (vec3(0.018, 0.006, -0.012) * smoothstep(0.45, 1.0, l)) + (vec3(-0.006, 0.0, 0.01) * (1.0 - smoothstep(0.0, 0.35, l)));
+            vec2 d = vUv - 0.5;
+            float v = 1.0 - uVignette * smoothstep(0.25, 0.85, dot(d, d) * 2.2);
+            gl_FragColor = vec4(clamp(x * v, 0.0, 1.0), c.a);
+          }`,
+      }),
+    );
     this.composer.setSize(w, h);
   }
 
@@ -251,7 +275,8 @@ export class MarketEngine {
 
     progress(0.04, "sky");
     // photo-scanned materials and the HDR sky (procedural fallbacks if anything fails)
-    const envAssets = await loadEnvAssets(this.quality).catch(() => undefined);
+    // photo-scanned produce and props load alongside the materials (procedural fallbacks otherwise)
+    const [envAssets] = await Promise.all([loadEnvAssets(this.quality).catch(() => undefined), loadScans().catch(() => undefined)]);
     if (this.disposed) return;
     progress(0.08, "sky");
     await nextFrame();
@@ -299,6 +324,7 @@ export class MarketEngine {
       if (this.disposed) return;
     }
     this.stallRoot.updateMatrixWorld(true);
+    this.placeProps(R);
 
     // Persian bazaar setting around the plaza
     progress(0.96, "bazaar");
@@ -906,6 +932,44 @@ export class MarketEngine {
     }
   }
 
+  /** Scanned bazaar props: copper pots, brass trays, wicker baskets and clay pots beside the stalls. */
+  private placeProps(R: number) {
+    const mk = (id: PropId, scale = 1) => {
+      const sc = propScan(id);
+      if (!sc) return null;
+      const m = new Mesh(sc.lods[0], sc.material);
+      m.scale.setScalar(scale);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
+    };
+    this.stalls.forEach((st, i) => {
+      const side = i % 2 ? 1 : -1; // the sack side, away from the vendor
+      const set: Array<[PropId, number, number, number, number]> =
+        i % 3 === 0
+          ? [["brass_pot_01", side * 2.0, 1.02, i * 1.1, 1], ["brass_pot_02", side * 1.52, 1.16, i * 0.7, 0.85]]
+          : i % 3 === 1
+            ? [["wicker_basket_01", side * 1.98, 1.05, i * 0.9, 1.15]]
+            : [["planter_pot_clay", side * 2.0, 1.04, i, 0.95], ["brass_pot_02", side * 1.55, 1.18, i * 1.3, 0.8]];
+      for (const [id, x, z, ry, k] of set) {
+        const m = mk(id, k);
+        if (!m) continue;
+        m.position.set(x, 0, z);
+        m.rotation.y = ry;
+        st.group.add(m);
+      }
+    });
+    // a pair of tall brass vases by the entrance cypresses
+    for (const sx of [-1, 1]) {
+      const m = mk("brass_vase_01", 1);
+      if (!m) continue;
+      m.position.set(sx * 4.25, 0, R * 0.79);
+      m.rotation.y = sx * 0.6;
+      this.scene.add(m);
+      this.obstacles.push({ c: new Vector3(m.position.x, 0, m.position.z), r: 0.2 });
+    }
+  }
+
   /** Make a historical figure turn to the visitor and speak for a while. */
   figureSpeak(id: string, seconds: number) {
     this.crowd?.speak(id, seconds);
@@ -1001,6 +1065,7 @@ export class MarketEngine {
     this.env?.envDispose();
     this.crowd?.dispose();
     this.people?.dispose();
+    disposeScans();
     this.ambience.dispose();
     disposeObject(this.scene);
     disposeProduceModels();

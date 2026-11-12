@@ -12,6 +12,7 @@ import { kraftSet } from "../util/textures";
 import { Rng, hashString } from "../util/noise";
 import * as F from "./fruits";
 import * as V from "./veggies";
+import { scanFor, scanGeometry } from "./scans";
 
 type Builder = (ctx: BuildCtx) => ProduceModel;
 
@@ -203,6 +204,16 @@ export function getProduceModel(ref: KindRef, detail: Detail, seedKey = ""): Pro
   const builder = BUILDERS[ref.kind] || BUILDERS.bag;
   const seed = hashString(key) % 1000;
   m = builder({ detail, variant: ref.variant, rng: new Rng(seed + 1), seed });
+  // a real photo-scan of this kind replaces the procedural model (same size, same resting style)
+  const scan = scanFor(ref.kind, ref.variant);
+  if (scan) {
+    const maxSide = Math.max(m.size.x, m.size.y, m.size.z);
+    m.parts.forEach((p) => p.geometry.dispose());
+    const geometry = scanGeometry(scan, detail === "hero" ? 1 : 0, maxSide);
+    const size = new Vector3();
+    geometry.boundingBox!.getSize(size);
+    m = { parts: [{ geometry, material: scan.material }], size, rest: m.rest };
+  }
   modelCache.set(key, m);
   return m;
 }
@@ -239,7 +250,7 @@ export function getLabeledModel(imageUrl: string, fallbackUrl?: string | null): 
 }
 
 export function disposeProduceModels() {
-  modelCache.forEach((m) => m.parts.forEach((p) => p.geometry.dispose()));
+  modelCache.forEach((m) => m.parts.forEach((p) => (p.material as any).name?.startsWith("scan-") || p.geometry.dispose()));
   modelCache.clear();
 }
 
