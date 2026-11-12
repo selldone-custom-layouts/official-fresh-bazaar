@@ -164,7 +164,7 @@ export class MarketEngine {
     this.renderer.outputColorSpace = SRGBColorSpace;
     // Khronos PBR Neutral: the tone mapper made for product rendering — true produce colours, soft highlights
     this.renderer.toneMapping = NeutralToneMapping;
-    this.renderer.toneMappingExposure = 0.92;
+    this.renderer.toneMappingExposure = 0.98;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.setClearColor(new Color("#d9b48e"));
@@ -198,7 +198,7 @@ export class MarketEngine {
     if (this.quality === "high") {
       const g = new GTAOPass(this.scene, this.camera, w, h);
       g.output = GTAOPass.OUTPUT.Default;
-      g.blendIntensity = 0.6;
+      g.blendIntensity = 0.42;
       g.updateGtaoMaterial({ radius: 0.35, distanceExponent: 1.4, thickness: 1.5, scale: 1.1, samples: 12 });
       g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
       this.composer.addPass(g);
@@ -216,8 +216,10 @@ export class MarketEngine {
           void main(){
             vec4 c = texture2D(tDiffuse, vUv);
             vec3 x = c.rgb;
-            // soft S-curve around mid grey
-            x = mix(x, x * x * (3.0 - 2.0 * x), 0.18);
+            // lift the shadows (no crushed blacks) and keep a gentle shoulder in the highlights
+            float l0 = dot(x, vec3(0.2126, 0.7152, 0.0722));
+            x += (1.0 - x) * 0.055 * (1.0 - smoothstep(0.0, 0.45, l0));
+            x = mix(x, x * x * (3.0 - 2.0 * x), 0.08 * smoothstep(0.4, 0.9, l0));
             // warm the highlights, cool the shadows a touch
             float l = dot(x, vec3(0.2126, 0.7152, 0.0722));
             x += (vec3(0.018, 0.006, -0.012) * smoothstep(0.45, 1.0, l)) + (vec3(-0.006, 0.0, 0.01) * (1.0 - smoothstep(0.0, 0.35, l)));
@@ -864,7 +866,8 @@ export class MarketEngine {
     const lib = real && this.people && this.people.avatars.size ? this.people : null;
     const VENDORS = ROSTER.filter((a) => a.role === "vendor").map((a) => a.id);
     // walkers 0+1 (mother and child) and 4+5 (a couple) walk together
-    const WALKERS = ["Female_Adult_05", "Male_Child_01", "Male_Adult_17", "Female_Adult_03", "Male_Adult_07", "Female_Adult_02", "Female_Adult_15", "Female_Adult_07", "Male_Adult_17"];
+    // every walker is a different person (no repeated faces or outfits)
+    const WALKERS = ["Female_Adult_05", "Male_Child_01", "Female_Adult_03", "Male_Adult_07", "Female_Adult_02", "Female_Adult_15", "Female_Adult_07"];
     const CHATTERS = ["Male_Adult_03", "Male_Adult_02"];
     const V_OUT: Outfit[] = ["man-qaba", "man-vest", "elder", "woman-scarf", "man-vest", "woman-qashqai"];
     const S_OUT: Outfit[] = ["woman-qashqai", "man-qaba", "woman-scarf", "man-vest", "elder", "woman-scarf", "man-qaba", "woman-qashqai"];
@@ -904,6 +907,7 @@ export class MarketEngine {
         const list = (kind === "vendor" ? VENDORS : kind === "walker" ? WALKERS : CHATTERS).filter((id) => lib.avatars.has(id));
         const any = [...lib.avatars.keys()];
         const id = list.length ? list[i % list.length] : any[i % any.length];
+        // ordinary people wear their own (artist-made, fully skinned) clothes: realistic and light
         return new Person(lib, id);
       }
       const outfit = kind === "vendor" ? V_OUT[i % V_OUT.length] : S_OUT[(i + (kind === "chatter" ? 3 : 0)) % S_OUT.length];

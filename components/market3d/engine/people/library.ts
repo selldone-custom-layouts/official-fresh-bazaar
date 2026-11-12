@@ -26,7 +26,7 @@ import {
   VectorKeyframeTrack,
 } from "three";
 import { fetchPack, Pack } from "./pack";
-import { Costume, costumeMesh } from "./costume";
+import { Costume, CostumeHandle, costumeMesh, redress } from "./costume";
 
 export type Sex = "m" | "f";
 export interface AvatarInfo {
@@ -50,7 +50,6 @@ export const ROSTER: AvatarInfo[] = [
   { id: "Male_Adult_14", sex: "m", role: "vendor", elder: true },
   { id: "Male_Adult_04", sex: "m", role: "vendor" },
   { id: "Female_Adult_03", sex: "f", role: "shopper" },
-  { id: "Male_Adult_17", sex: "m", role: "shopper" },
   { id: "Female_Adult_05", sex: "f", role: "shopper" },
   { id: "Male_Adult_07", sex: "m", role: "shopper" },
   { id: "Female_Adult_02", sex: "f", role: "shopper" },
@@ -257,7 +256,7 @@ export class PeopleLibrary {
     const mat = (kind: string) => {
       if (kind === "hair")
         return hair
-          ? new MeshStandardMaterial({ name: `${id}-hair`, map: hair, alphaTest: 0.42, side: DoubleSide, roughness: 0.62, metalness: 0 })
+          ? new MeshStandardMaterial({ name: `${id}-hair`, map: hair, alphaTest: 0.38, alphaToCoverage: true, side: DoubleSide, roughness: 0.55, metalness: 0 })
           : new MeshStandardMaterial({ name: `${id}-hair`, visible: false });
       if (kind === "head")
         return new MeshStandardMaterial({ name: `${id}-head`, map: head, normalMap: headN, roughnessMap: headR, roughness: headR ? 1 : 0.62, metalness: 0 });
@@ -268,7 +267,7 @@ export class PeopleLibrary {
   }
 
   /** A new animated instance of an avatar: a 1-unit group (metres) with the skinned body inside. */
-  instance(id: string, costume?: Costume): { root: Group; mesh: SkinnedMesh; bones: Map<string, Bone>; asset: AvatarAsset; extra: SkinnedMesh[] } {
+  instance(id: string, costume?: Costume): { root: Group; mesh: SkinnedMesh; bones: Map<string, Bone>; asset: AvatarAsset; extra: SkinnedMesh[]; costume: CostumeHandle | null } {
     const a = this.avatars.get(id)!;
     const root = new Group();
     const body = new Group();
@@ -294,8 +293,10 @@ export class PeopleLibrary {
     mesh.receiveShadow = true;
     const map = new Map<string, Bone>();
     bones.forEach((b) => map.set(b.name, b));
-    const extra = costume ? [costumeMesh(a, costume, mesh, this.shadows)] : [];
-    return { root, mesh, bones: map, asset: a, extra };
+    // historical figures re-wear their own fitted clothes in period silk (see `redress`)
+    if (costume?.fitted) redress(a, mesh, costume);
+    const handle = costume ? costumeMesh(a, costume, mesh, this.shadows, map) : null;
+    return { root, mesh, bones: map, asset: a, extra: handle ? [handle.mesh] : [], costume: handle };
   }
 
   clip(name: string) {

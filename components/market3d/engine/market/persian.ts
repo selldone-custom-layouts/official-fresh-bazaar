@@ -1,8 +1,8 @@
 /*
  * Fresh Market 3D — Persian bazaar setting.
  * Brick arcades with pointed (four-centred) arches and turquoise tile bands, a tiled entrance portal
- * (pishtaq) with the shop name in a calligraphy band, a turquoise dome with minarets, a tiled pool
- * (howz) with a fountain, cypress trees, carpets and brass lanterns. All procedural.
+ * (sar-dar) with the shop name in a tile inscription, brick bazaar domes and windcatchers, a tiled pool
+ * (howz) with a fountain, cypress trees, carpets and brass lanterns.
  */
 import {
   BoxGeometry,
@@ -25,6 +25,8 @@ import {
   PlaneGeometry,
   Quaternion,
   Shape,
+  ShapeGeometry,
+  Float32BufferAttribute,
   SphereGeometry,
   TorusGeometry,
   Vector3,
@@ -39,6 +41,9 @@ import { NOISE, Rng, clamp } from "../util/noise";
 import { canvasPattern, EnvAssets, pbr, PBRSet } from "./realism";
 import { buildCypresses } from "./cypress";
 import { buildFountain } from "./fountain";
+import { bazaarTiles, tileMaterial } from "./tilework";
+import { archPoints } from "./arch";
+import { buildPortal } from "./portal";
 
 // ───────────────────────────── palettes ─────────────────────────────
 const TURQ = "#1a9aa6";
@@ -49,23 +54,6 @@ const IVORY = "#f3ead6";
 const BRICK = [172, 116, 76];
 
 // ───────────────────────────── arch path ─────────────────────────────
-/** Four-centred Persian arch as a list of points (opening outline), base at y0. */
-function archPoints(w: number, y0: number, spring: number, apex: number, steps = 24): Array<[number, number]> {
-  const pts: Array<[number, number]> = [[-w / 2, y0], [-w / 2, spring]];
-  for (let i = 1; i <= steps; i++) {
-    const t = i / steps;
-    // cubic bezier from (-w/2, spring) to (0, apex)
-    const p0 = [-w / 2, spring], p1 = [-w / 2, spring + (apex - spring) * 0.62], p2 = [-w * 0.16, apex - (apex - spring) * 0.12], p3 = [0, apex];
-    const u = 1 - t;
-    pts.push([
-      u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
-      u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
-    ]);
-  }
-  const right = pts.slice(0, -1).reverse().map(([x, y]) => [-x, y] as [number, number]);
-  return [...pts, ...right];
-}
-
 function tracePath(ctx: CanvasRenderingContext2D, pts: Array<[number, number]>, X: (x: number) => number, Y: (y: number) => number) {
   ctx.beginPath();
   pts.forEach(([x, y], i) => (i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))));
@@ -446,40 +434,92 @@ function bayGeometry(d: BayDims): BufferGeometry {
   return g;
 }
 
+/** A flat strip in the bay's front plane with UVs in texture repeats (u along x, v up). */
+function strip(x0: number, x1: number, y0: number, y1: number, z: number, uLen: number, vLen: number): BufferGeometry {
+  const g = new PlaneGeometry(x1 - x0, y1 - y0);
+  g.translate((x0 + x1) / 2, (y0 + y1) / 2, z);
+  const pos = g.getAttribute("position"), uv = g.getAttribute("uv");
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) - x0) / uLen, (pos.getY(i) - y0) / vLen);
+  return g;
+}
+
 /**
- * Real relief in front of the painted bay (bay-local, front face at z = 0): rounded glazed tile
- * mouldings along both arches, raised cobalt alfiz frames, a projecting cornice with a row of
- * muqarnas teeth, and a ledge between the storeys. They catch light and cast real shadows.
+ * Real relief in front of the bay (bay-local, front face at z = 0), split by finish:
+ *  spandrel — haft-rang islimi panels framing each arch (one inverted-U shape, UVs centred on the arch)
+ *  border   — the faces of the raised alfiz frames and of the ledge between storeys
+ *  girih    — the star-and-cross band under the cornice
+ *  rope     — the twisted turquoise moulding around each arch
+ *  base     — frame sides, cornice ledges and muqarnas teeth (vertex coloured)
  */
-function bayRelief(d: BayDims): BufferGeometry {
-  const parts: BufferGeometry[] = [];
+function bayRelief(d: BayDims) {
+  const base: BufferGeometry[] = [], spandrel: BufferGeometry[] = [], border: BufferGeometry[] = [], girihP: BufferGeometry[] = [], ropeP: BufferGeometry[] = [];
   const col = (g: BufferGeometry, hex: string, jitter = 0.06) => {
     const c = new Color(hex);
     return paint(g, (p, _n, _uv, out) => out.copy(c).multiplyScalar(1 - jitter + NOISE.noise(p.x * 6, p.y * 6, p.z * 6) * jitter * 2));
   };
+  const BAND = 0.16;
   for (const a of [{ ...d.lower, y0: 0 }, d.upper]) {
-    // tile moulding hugging the arch
-    const pts = archPoints(a.w + 0.18, a.y0, a.spring, a.apex + 0.1, 32).map(([x, y]) => new Vector3(x, y, 0.035));
-    parts.push(col(new TubeGeometry(new CatmullRomCurve3(pts, false, "centripetal"), 72, 0.05, 8, false), TURQ_L, 0.08));
-    // raised alfiz frame
-    const fx = a.w / 2 + 0.32 - 0.08, top = a.apex + 0.3 - 0.08, h = a.apex + 0.3 - a.y0;
-    for (const sx of [-1, 1]) parts.push(col(transformed(new BoxGeometry(0.16, h, 0.05), [sx * fx, a.y0 + h / 2, 0.025]), COBALT));
-    parts.push(col(transformed(new BoxGeometry(fx * 2 + 0.16, 0.16, 0.05), [0, top, 0.025]), COBALT));
+    // rope moulding hugging the arch: u along the curve (one texture per ~0.45 m), v around the tube
+    const pts = archPoints(a.w + 0.18, a.y0, a.spring, a.apex + 0.1, 40).map(([x, y]) => new Vector3(x, y, 0.035));
+    const curve = new CatmullRomCurve3(pts, false, "centripetal");
+    const tube = new TubeGeometry(curve, 96, 0.05, 10, false);
+    const len = curve.getLength();
+    const tuv = tube.getAttribute("uv");
+    for (let i = 0; i < tuv.count; i++) tuv.setXY(i, tuv.getX(i) * (len / 0.45), tuv.getY(i));
+    ropeP.push(tube);
+
+    // raised alfiz frame: cobalt body, tiled border on its face
+    const fx = a.w / 2 + 0.32 - BAND / 2, top = a.apex + 0.3 - BAND / 2, h = a.apex + 0.3 - a.y0;
+    for (const sx of [-1, 1]) {
+      base.push(col(transformed(new BoxGeometry(BAND, h, 0.05), [sx * fx, a.y0 + h / 2, 0.025]), "#18306f"));
+      const fr = strip(-BAND / 2, BAND / 2, 0, h, 0, BAND * 8, BAND);
+      // run the band vertically: swap u/v so the motif flows up the jamb
+      const uv = fr.getAttribute("uv"), pos = fr.getAttribute("position");
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getY(i) / (BAND * 8), (pos.getX(i) + BAND / 2) / BAND);
+      fr.translate(sx * fx, a.y0, 0.0505);
+      border.push(fr);
+    }
+    base.push(col(transformed(new BoxGeometry(fx * 2 + BAND, BAND, 0.05), [0, top, 0.025]), "#18306f"));
+    border.push(strip(-fx - BAND / 2, fx + BAND / 2, top - BAND / 2, top + BAND / 2, 0.0505, BAND * 8, BAND));
+
+    // spandrel panel: the frame's inner rectangle above the springing line, minus the arch
+    const xl = -fx + BAND / 2, xr = fx - BAND / 2, yb = a.spring, yt = top - BAND / 2;
+    const archPts = archPoints(a.w + 0.26, a.y0, a.spring, a.apex + 0.12, 40).filter(([, y]) => y >= yb - 1e-6);
+    const shape = new Shape();
+    shape.moveTo(xl, yb);
+    shape.lineTo(xl, yt);
+    shape.lineTo(xr, yt);
+    shape.lineTo(xr, yb);
+    // along the arch from its right springing point over the apex back to the left one
+    [...archPts].reverse().forEach(([x, y]) => shape.lineTo(x, y));
+    shape.lineTo(xl, yb);
+    const sp = new ShapeGeometry(shape, 24);
+    const spos = sp.getAttribute("position");
+    const suv = new Float32Array(spos.count * 2);
+    for (let i = 0; i < spos.count; i++) {
+      suv[i * 2] = (spos.getX(i) - xl) / (xr - xl);
+      suv[i * 2 + 1] = (spos.getY(i) - yb) / (yt - yb);
+    }
+    sp.setAttribute("uv", new Float32BufferAttribute(suv, 2));
+    sp.translate(0, 0, 0.012);
+    spandrel.push(sp);
   }
-  // cornice ledge and muqarnas teeth
-  parts.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.13, 0.3), [0, d.H - 0.065, 0.15]), "#cdb894", 0.1));
-  parts.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.06, 0.2), [0, d.H - 0.16, 0.1]), "#bfa984", 0.1));
+  // cornice: star band, ledges and muqarnas teeth
+  girihP.push(strip(-d.W / 2, d.W / 2, d.H - 0.43, d.H - 0.13, 0.008, 0.3 * 4, 0.3));
+  base.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.13, 0.3), [0, d.H - 0.065, 0.15]), "#cdb894", 0.1));
+  base.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.06, 0.2), [0, d.H - 0.16, 0.1]), "#bfa984", 0.1));
   const n = Math.round(d.W / 0.18);
   for (let i = 0; i < n; i++) {
     const x = -d.W / 2 + (i + 0.5) * (d.W / n);
     const tooth = new ConeGeometry(0.085, 0.22, 4, 1);
     tooth.rotateY(Math.PI / 4);
     tooth.rotateX(Math.PI);
-    parts.push(col(transformed(tooth, [x, d.H - 0.3, 0.085]), i % 2 ? TURQ : "#2a5aa8", 0.08));
+    base.push(col(transformed(tooth, [x, d.H - 0.3, 0.085]), i % 2 ? "#1f9fb0" : "#1d3a8c", 0.08));
   }
-  // ledge between storeys
-  parts.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.18, 0.09), [0, 4.25, 0.045]), "#c6b28f", 0.1));
-  return merge(parts);
+  // ledge between storeys, its face tiled with the border band
+  base.push(col(transformed(new BoxGeometry(d.W + 0.02, 0.18, 0.09), [0, 4.25, 0.045]), "#c6b28f", 0.1));
+  border.push(strip(-d.W / 2 - 0.01, d.W / 2 + 0.01, 4.16, 4.34, 0.0905, 0.18 * 8, 0.18));
+  return { base: merge(base), spandrel: merge(spandrel), border: merge(border), girih: merge(girihP), rope: merge(ropeP) };
 }
 
 export interface PersianBuild {
@@ -541,11 +581,23 @@ export function buildPersianBazaar(o: PersianOptions): PersianBuild {
   bays.castShadow = shadows;
   bays.receiveShadow = true;
   group.add(bays);
-  const relief = new InstancedMesh(bayRelief(BAY), new MeshStandardMaterial({ vertexColors: true, roughness: 0.36, metalness: 0, envMapIntensity: 0.8 }), mats.length);
-  mats.forEach((m, i) => relief.setMatrixAt(i, m));
-  relief.castShadow = shadows;
-  relief.receiveShadow = true;
-  group.add(relief);
+  // haft-rang tilework in real relief, instanced across every bay
+  const tiles = bazaarTiles(o.quality);
+  const relief = bayRelief(BAY);
+  const reliefParts: Array<[BufferGeometry, Material]> = [
+    [relief.base, new MeshPhysicalMaterial({ vertexColors: true, roughness: 0.3, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.1 })],
+    [relief.spandrel, tileMaterial(tiles.spandrel)],
+    [relief.border, tileMaterial(tiles.border)],
+    [relief.girih, tileMaterial(tiles.girih)],
+    [relief.rope, tileMaterial(tiles.rope)],
+  ];
+  for (const [geo, mat] of reliefParts) {
+    const im = new InstancedMesh(geo, mat, mats.length);
+    mats.forEach((m, i) => im.setMatrixAt(i, m));
+    im.castShadow = shadows;
+    im.receiveShadow = true;
+    group.add(im);
+  }
 
   // recess back walls + roof slab (one merged ring each)
   const backParts: BufferGeometry[] = [];
@@ -612,123 +664,74 @@ export function buildPersianBazaar(o: PersianOptions): PersianBuild {
   });
   group.add(lb, lg);
 
-  // ── Entrance portal (pishtaq) at +Z, facing the plaza
-  const portal = new Group();
-  const PW = 8.4, PH = 12.5;
-  const ps = new Shape();
-  ps.moveTo(-PW / 2, 0);
-  ps.lineTo(PW / 2, 0);
-  ps.lineTo(PW / 2, PH);
-  ps.lineTo(-PW / 2, PH);
-  ps.closePath();
-  const hole = new Shape();
-  [...archPoints(4.6, 0, 6.2, 9.6, 32)].reverse().forEach(([x, y], i) => (i ? hole.lineTo(x, y) : hole.moveTo(x, y)));
-  ps.holes.push(hole as any);
-  const pg = new ExtrudeGeometry(ps, { depth: 1.2, bevelEnabled: false, curveSegments: 6 });
-  {
-    const pos = pg.getAttribute("position"), uv = pg.getAttribute("uv"), nor = pg.getAttribute("normal");
-    for (let i = 0; i < pos.count; i++) {
-      if (Math.abs(nor.getZ(i)) > 0.9) uv.setXY(i, (pos.getX(i) + PW / 2) / PW, pos.getY(i) / PH);
-      else uv.setXY(i, (pos.getX(i) + pos.getZ(i)) * 0.6, pos.getY(i) * 0.6);
-    }
-  }
-  pg.translate(0, 0, -1.2);
-  const pc = makeCanvas(1024, 1524);
-  {
-    const ctx = pc.getContext("2d")!;
-    const pxm = 1024 / PW;
-    const X = (x: number) => (x + PW / 2) * pxm, Y = (y: number) => 1524 - y * pxm;
-    starTiles(ctx, 0, 0, 1024, 1524, 54, COBALT, TURQ, IVORY);
-    arabesque(ctx, X(-3.2), Y(11.6), 6.4 * pxm, 2.2 * pxm, 11, TURQ);
-    const pts = archPoints(4.9, 0, 6.2, 9.85, 32);
-    tracePath(ctx, pts, X, Y);
-    ctx.strokeStyle = GOLD;
-    ctx.lineWidth = 0.22 * pxm;
-    ctx.stroke();
-    tracePath(ctx, archPoints(5.3, 0, 6.2, 10.2, 32), X, Y);
-    ctx.strokeStyle = IVORY;
-    ctx.lineWidth = 6;
-    ctx.stroke();
-    ctx.strokeStyle = GOLD;
-    ctx.lineWidth = 0.25 * pxm;
-    ctx.strokeRect(0.12 * pxm, 0.12 * pxm, 1024 - 0.24 * pxm, 1524 - 0.24 * pxm);
-  }
-  const portalMat = new MeshStandardMaterial({ map: toTexture(pc, true, false, 8), roughness: 0.55, metalness: 0.05 });
-  const pm = new Mesh(pg, [portalMat, new MeshStandardMaterial({ map: tileTexture("star"), color: new Color("#7d8fa8"), roughness: 0.75 })] as any);
-  pm.castShadow = shadows;
-  pm.receiveShadow = true;
-  portal.add(pm);
-  // recess: half-dome hint (dark gradient tiled back) + gate
-  const recess = new Mesh(new PlaneGeometry(4.8, 10), new MeshStandardMaterial({ map: tileTexture("arabesque", 21), color: new Color("#6b8c94"), roughness: 0.6 }));
-  recess.position.set(0, 5, -2.6);
-  portal.add(recess);
-  const gate = new Mesh(new BoxGeometry(3.2, 4.4, 0.2), new MeshStandardMaterial({ color: "#4a2c18", roughness: 0.7 }));
-  gate.position.set(0, 2.2, -2.45);
-  portal.add(gate);
-  const sideWalls = new Mesh(merge([transformed(new BoxGeometry(0.4, 9.6, 2.6), [-2.4, 4.8, -1.3]), transformed(new BoxGeometry(0.4, 9.6, 2.6), [2.4, 4.8, -1.3])]), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.55 }));
-  portal.add(sideWalls);
-  // calligraphy band with the shop name
-  const band = new Mesh(new PlaneGeometry(PW - 0.8, 0.95), new MeshStandardMaterial({ map: calligraphyTexture(o.shopTitle, o.rtl), roughness: 0.5, emissive: new Color("#ffffff"), emissiveIntensity: 0.06 }));
-  band.position.set(0, PH - 0.95, 0.02);
-  portal.add(band);
-  // minaret-like finials on the portal corners
-  for (const sx of [-1, 1]) {
-    const pillar = new Mesh(new CylinderGeometry(0.42, 0.48, PH + 1.6, 16), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.55 }));
-    pillar.position.set(sx * (PW / 2 + 0.2), (PH + 1.6) / 2, -0.4);
-    pillar.castShadow = shadows;
-    portal.add(pillar);
-    const cap = new Mesh(new ConeGeometry(0.55, 1.1, 16), new MeshStandardMaterial({ color: TURQ, roughness: 0.35 }));
-    cap.position.set(sx * (PW / 2 + 0.2), PH + 2.15, -0.4);
-    portal.add(cap);
-  }
+  // ── Entrance gate (sar-dar) at +Z, facing the plaza — see portal.ts
+  const portal = buildPortal({ shopTitle: o.shopTitle, rtl: o.rtl, shadows, quality: o.quality, sets, brass, glow });
   portal.position.set(0, 0, ringR + 0.7);
   portal.rotation.y = Math.PI;
   group.add(portal);
 
-  // ── Turquoise dome + minarets behind the market (towards -Z)
-  const domeTex = tileTexture("arabesque", 33);
-  domeTex.repeat.set(6, 3);
-  const domeMat = new MeshStandardMaterial({ map: domeTex, roughness: 0.22, metalness: 0.05 });
-  const brickMat = brickSet ? pbr(brickSet, [4, 4]) : new MeshStandardMaterial({ map: brickTexture(0.25), roughness: 0.9 });
-  const mosque = new Group();
-  const base = new Mesh(new BoxGeometry(14, 11, 14), brickMat);
-  base.position.y = 5.5;
-  mosque.add(base);
-  const drum = new Mesh(new CylinderGeometry(5.2, 5.4, 4.2, 48), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.5 }));
-  drum.position.y = 13.1;
-  mosque.add(drum);
-  const domeG = lathe([[5.5, 0], [5.9, 1.4], [5.9, 3.0], [5.2, 5.0], [3.6, 6.8], [1.6, 8.2], [0.25, 9.0], [0, 9.2]], 64, 24);
-  const dome = new Mesh(domeG, domeMat);
-  dome.position.y = 15.2;
-  mosque.add(dome);
-  const finial = new Mesh(merge([transformed(new SphereGeometry(0.35, 12, 8), [0, 9.5, 0]), transformed(new CylinderGeometry(0.05, 0.05, 1.6, 6), [0, 10.2, 0]), transformed(new SphereGeometry(0.22, 10, 8), [0, 10.4, 0])]), brass);
-  finial.position.y = 15.2;
-  mosque.add(finial);
-  for (const sx of [-1, 1]) {
-    const m = new Group();
-    const shaft = new Mesh(new CylinderGeometry(0.9, 1.1, 26, 24), brickMat);
-    shaft.position.y = 13;
-    m.add(shaft);
-    for (const y of [8, 15, 21]) {
-      const b = new Mesh(new CylinderGeometry(0.98, 0.98, 1.2, 24), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.5 }));
-      b.position.y = y;
-      m.add(b);
+  // ── Bazaar skyline: a brick dome with a skylight over every bay (as in the covered bazaars of
+  // Kashan and Isfahan) and Yazd-style windcatchers (badgir) rising behind the arcades. No religious
+  // architecture — this is a market.
+  const brickMat = brickSet ? pbr(brickSet, [3, 2], { color: new Color("#e2cfb2") }) : new MeshStandardMaterial({ map: brickTexture(0.25), roughness: 0.9 });
+  const plasterMat = plasterSet ? pbr(plasterSet, [2, 4], { color: new Color("#d8c3a2") }) : new MeshStandardMaterial({ color: "#c9b391", roughness: 0.95 });
+  {
+    const domeGeo = merge([
+      transformed(new SphereGeometry(1.45, 28, 10, 0, Math.PI * 2, 0, Math.PI / 2), [0, 0, 0], [0, 0, 0], [1, 0.62, 1]),
+      // drum ring and the little skylight lantern on top
+      transformed(new CylinderGeometry(1.5, 1.55, 0.35, 28, 1, true), [0, -0.12, 0]),
+      transformed(new CylinderGeometry(0.32, 0.36, 0.38, 12), [0, 1.05, 0]),
+      transformed(new CylinderGeometry(0.42, 0.42, 0.07, 12), [0, 1.27, 0]),
+    ]);
+    const domes = new InstancedMesh(domeGeo, brickMat, placements.length);
+    const m = new Matrix4(), q2 = new Quaternion(), up2 = new Vector3(0, 1, 0);
+    placements.forEach(({ a: ang }, i) => {
+      const rr = ringR + 1.05;
+      m.compose(new Vector3(Math.sin(ang) * rr, BAY.H + 0.32, -Math.cos(ang) * rr), q2.setFromAxisAngle(up2, -ang), new Vector3(1, 1, 1));
+      domes.setMatrixAt(i, m);
+    });
+    domes.castShadow = shadows;
+    domes.receiveShadow = true;
+    group.add(domes);
+
+    // windcatcher: plastered shaft, slotted head with a dark interior, stepped cap
+    const tower = (h: number) => {
+      const solid: BufferGeometry[] = [];
+      const dark: BufferGeometry[] = [];
+      solid.push(transformed(new BoxGeometry(2.3, h, 2.3), [0, h / 2, 0]));
+      const head = 3.4, y0 = h;
+      dark.push(transformed(new BoxGeometry(2.1, head, 2.1), [0, y0 + head / 2, 0]));
+      const fins = 6;
+      for (let side = 0; side < 4; side++) {
+        for (let k = 0; k <= fins; k++) {
+          const x = -1.2 + (k / fins) * 2.4;
+          const fin = new BoxGeometry(0.16, head, 0.34);
+          fin.translate(x, y0 + head / 2, 1.2);
+          fin.rotateY((side * Math.PI) / 2);
+          solid.push(fin);
+        }
+      }
+      solid.push(transformed(new BoxGeometry(2.7, 0.28, 2.7), [0, y0 + head + 0.14, 0]));
+      solid.push(transformed(new BoxGeometry(2.45, 0.22, 2.45), [0, y0 + head + 0.39, 0]));
+      solid.push(transformed(new BoxGeometry(2.6, 0.18, 2.6), [0, y0 - 0.09, 0]));
+      return { solid: merge(solid), dark: merge(dark) };
+    };
+    const darkMat = new MeshStandardMaterial({ color: "#1b1410", roughness: 1 });
+    const spots: Array<[number, number, number]> = [
+      [0, ringR + 5.5, 11.5],
+      [2.05, ringR + 4.5, 10],
+      [-2.2, ringR + 5, 12.5],
+    ];
+    for (const [ang, rr, h] of spots) {
+      const t = tower(h);
+      const g2 = new Group();
+      g2.add(new Mesh(t.solid, plasterMat), new Mesh(t.dark, darkMat));
+      g2.position.set(Math.sin(ang) * rr, 0, -Math.cos(ang) * rr);
+      g2.rotation.y = -ang;
+      g2.traverse((c: any) => c.isMesh && ((c.castShadow = false), (c.receiveShadow = true)));
+      group.add(g2);
     }
-    const balcony = new Mesh(new CylinderGeometry(1.5, 1.0, 0.8, 24), new MeshStandardMaterial({ color: "#c8b48a", roughness: 0.8 }));
-    balcony.position.y = 23.4;
-    m.add(balcony);
-    const top = new Mesh(new CylinderGeometry(0.75, 0.8, 3, 20), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.5 }));
-    top.position.y = 25.3;
-    m.add(top);
-    const cone = new Mesh(lathe([[0.85, 0], [0.9, 0.4], [0.6, 1.2], [0.2, 2.0], [0, 2.3]], 24, 8), domeMat);
-    cone.position.y = 26.8;
-    m.add(cone);
-    m.position.set(sx * 9.5, 0, 4);
-    mosque.add(m);
   }
-  mosque.position.set(0, 0, -(ringR + 15));
-  mosque.traverse((c: any) => c.isMesh && (c.castShadow = false));
-  group.add(mosque);
 
   // ── Central howz (pool) with a fountain — see fountain.ts
   const obstacles: Array<{ c: Vector3; r: number }> = [];
@@ -754,7 +757,13 @@ export function buildPersianBazaar(o: PersianOptions): PersianBuild {
   group.add(cypresses.group);
   cypressSpots.forEach(([x, z]) => obstacles.push({ c: new Vector3(x, 0, z), r: 0.7 }));
   // tiled planter rings around the cypresses
-  const planterRing = new InstancedMesh(new CylinderGeometry(0.6, 0.65, 0.35, 16), new MeshStandardMaterial({ map: tileTexture("star"), roughness: 0.5 }), cypressSpots.length);
+  const planterGeo = new CylinderGeometry(0.6, 0.65, 0.35, 32, 1);
+  {
+    // wrap the star band around the planter: ~3.8 m of band around, one band high
+    const uv = planterGeo.getAttribute("uv");
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (Math.PI * 1.2) / 1.2, uv.getY(i));
+  }
+  const planterRing = new InstancedMesh(planterGeo, tileMaterial(bazaarTiles(o.quality).girih), cypressSpots.length);
   cypressSpots.forEach(([x, z], i) => planterRing.setMatrixAt(i, new Matrix4().makeTranslation(x, 0.17, z)));
   planterRing.receiveShadow = true;
   group.add(planterRing);

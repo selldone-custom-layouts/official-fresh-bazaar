@@ -183,50 +183,205 @@ function withCaustics(mat: MeshStandardMaterial, uniforms: { uTime: { value: num
 
 // ───────────────────────────── geraniums & fish ─────────────────────────────
 
-function geraniumGeometry(seed: number): BufferGeometry {
+let leafTex: CanvasTexture | null = null;
+/** a zonal-geranium leaf: fresh green with a darker horseshoe "zone" and pale palmate veins */
+function geraniumLeafTexture(): CanvasTexture {
+  if (leafTex) return leafTex;
+  const N = 128;
+  const c = makeCanvas(N);
+  const ctx = c.getContext("2d")!;
+  const g = ctx.createRadialGradient(N / 2, N / 2, 2, N / 2, N / 2, N / 2);
+  g.addColorStop(0, "#5f8f3a");
+  g.addColorStop(0.7, "#3f7428");
+  g.addColorStop(1, "#4f8634");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, N, N);
+  // the zone: a soft bronze ring, open at the stalk
+  ctx.lineWidth = N * 0.09;
+  ctx.strokeStyle = "rgba(70,40,20,0.45)";
+  ctx.beginPath();
+  ctx.arc(N / 2, N / 2, N * 0.27, Math.PI * 0.62, Math.PI * 2.38);
+  ctx.stroke();
+  // palmate veins
+  ctx.strokeStyle = "rgba(190,220,150,0.5)";
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 9; i++) {
+    const a2 = Math.PI * 0.62 + (i / 8) * Math.PI * 1.76;
+    ctx.beginPath();
+    ctx.moveTo(N / 2, N / 2);
+    ctx.lineTo(N / 2 + Math.cos(a2) * N * 0.47, N / 2 + Math.sin(a2) * N * 0.47);
+    ctx.stroke();
+  }
+  const img = ctx.getImageData(0, 0, N, N);
+  for (let i = 0; i < N * N; i++) {
+    const n = NOISE.noise((i % N) * 0.4, Math.floor(i / N) * 0.4, 5) * 14;
+    img.data[i * 4] += n;
+    img.data[i * 4 + 1] += n;
+    img.data[i * 4 + 2] += n * 0.6;
+  }
+  ctx.putImageData(img, 0, 0);
+  leafTex = toTexture(c, true, false, 4);
+  return leafTex;
+}
+
+function geraniumGeometry(seed: number): { leaves: BufferGeometry; flowers: BufferGeometry } {
   const rng = new Rng(seed);
-  const parts: BufferGeometry[] = [];
-  // round, scalloped leaves with the darker "zone" ring geraniums are named for
-  for (let i = 0; i < 16; i++) {
-    const g = new CircleGeometry(0.045 * rng.range(0.8, 1.15), 18);
+  const leaves: BufferGeometry[] = [];
+  const flowers: BufferGeometry[] = [];
+  // round, scalloped, cupped leaves on stalks, in two loose tiers
+  for (let i = 0; i < 22; i++) {
+    const size = 0.05 * rng.range(0.7, 1.15) * (i < 8 ? 1.1 : 0.85);
+    const g = new CircleGeometry(size, 28);
     const pos = g.getAttribute("position");
     for (let k = 0; k < pos.count; k++) {
       const x = pos.getX(k), y = pos.getY(k);
       const a = Math.atan2(y, x), r = Math.hypot(x, y);
-      const s = 1 + Math.sin(a * 7) * 0.06;
-      pos.setXYZ(k, Math.cos(a) * r * s, Math.sin(a) * r * s, -r * r * 6); // cupped
+      // seven shallow lobes and a notch where the stalk joins
+      const notch = Math.exp(-Math.pow((a + Math.PI / 2) / 0.22, 2)) * 0.22;
+      const sc = 1 + Math.sin(a * 7) * 0.05 - notch;
+      pos.setXYZ(k, Math.cos(a) * r * sc, Math.sin(a) * r * sc, -r * r * 5 + Math.sin(a * 7) * r * 0.06);
     }
-    paint(g, (p, _n, _uv, out) => {
-      const r = Math.hypot(p.x, p.y) / 0.05;
-      out.setRGB(0.12, 0.32, 0.08).multiplyScalar(0.8 + NOISE.noise(p.x * 80, p.y * 80, seed) * 0.2);
-      if (r > 0.45 && r < 0.62) out.multiplyScalar(0.55);
-    });
-    const ang = (i / 16) * Math.PI * 2 + rng.range(-0.2, 0.2);
-    const out = rng.range(0.03, 0.09);
-    g.rotateX(-Math.PI / 2 + rng.range(0.2, 0.7));
+    g.computeVertexNormals();
+    const tint = rng.range(0.82, 1.08);
+    paint(g, (_p, _n, _uv, out) => out.setRGB(tint, tint, tint));
+    const ang = (i / 22) * Math.PI * 2 * 2.3 + rng.range(-0.25, 0.25);
+    const out = (i < 8 ? 0.09 : 0.045) * rng.range(0.85, 1.15);
+    const h = i < 8 ? rng.range(0.03, 0.06) : rng.range(0.07, 0.11);
+    g.rotateX(-Math.PI / 2 + rng.range(0.25, 0.6));
     g.rotateY(-ang + Math.PI / 2);
-    g.translate(Math.cos(ang) * out, rng.range(0.02, 0.09), Math.sin(ang) * out);
-    parts.push(g);
+    g.translate(Math.cos(ang) * out, h, Math.sin(ang) * out);
+    leaves.push(g);
+    // the stalk from the crown to the leaf
+    const stalk = new CatmullRomCurve3([new Vector3(0, 0.005, 0), new Vector3(Math.cos(ang) * out * 0.45, h * 0.8 + 0.01, Math.sin(ang) * out * 0.45), new Vector3(Math.cos(ang) * out * 0.8, h, Math.sin(ang) * out * 0.8)]);
+    const st = new TubeGeometry(stalk, 6, 0.0018, 4, false);
+    paint(st, (_p, _n, _uv, o2) => o2.setRGB(0.55, 0.62, 0.35));
+    leaves.push(st);
   }
-  // flower heads: umbels of five-petal flowers on stems
+  // umbels: tight balls of five-petal florets with paler eyes on long stems, and green buds
   const red = new Color(rng.pick(["#d81e2c", "#e0283f", "#c4122a"]));
-  for (let u = 0; u < 5; u++) {
-    const cx = rng.range(-0.06, 0.06), cz = rng.range(-0.06, 0.06), cy = rng.range(0.14, 0.2);
-    const stem = new CylinderGeometry(0.0025, 0.003, cy, 4);
-    stem.translate(cx * 0.5, cy / 2, cz * 0.5);
-    paint(stem, (_p, _n, _uv, out) => out.setRGB(0.2, 0.36, 0.12));
-    parts.push(stem);
-    for (let f = 0; f < 11; f++) {
-      const g = new CircleGeometry(0.012, 5);
-      paint(g, (_p, _n, _uv, out) => out.copy(red).multiplyScalar(rng.range(0.85, 1.12)));
-      const th = rng.range(0, Math.PI * 2), ph = rng.range(0, 1.1);
+  for (let u = 0; u < 6; u++) {
+    const cx = rng.range(-0.07, 0.07), cz = rng.range(-0.07, 0.07), cy = rng.range(0.17, 0.24);
+    const stem = new CatmullRomCurve3([new Vector3(cx * 0.2, 0.02, cz * 0.2), new Vector3(cx * 0.6, cy * 0.6, cz * 0.6), new Vector3(cx, cy, cz)]);
+    const sg = new TubeGeometry(stem, 8, 0.0028, 4, false);
+    paint(sg, (_p, _n, _uv, o2) => o2.setRGB(0.24, 0.4, 0.14));
+    flowers.push(sg);
+    for (let f = 0; f < 16; f++) {
+      const g = new CircleGeometry(0.013, 10);
+      const gp = g.getAttribute("position");
+      for (let k = 0; k < gp.count; k++) {
+        const x = gp.getX(k), y = gp.getY(k), a = Math.atan2(y, x), r = Math.hypot(x, y);
+        const sc = 0.75 + 0.25 * Math.abs(Math.cos(a * 2.5)); // five petals
+        gp.setXYZ(k, Math.cos(a) * r * sc, Math.sin(a) * r * sc, -r * r * 8);
+      }
+      const shade = rng.range(0.85, 1.12);
+      paint(g, (p, _n, _uv, o2) => o2.copy(red).multiplyScalar(shade * (Math.hypot(p.x, p.y) < 0.0035 ? 1.35 : 1)));
+      const th = rng.range(0, Math.PI * 2), ph = rng.range(0, 1.25);
       const d = new Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th));
       g.lookAt(d);
-      g.translate(cx + d.x * 0.025, cy + d.y * 0.02, cz + d.z * 0.025);
-      parts.push(g);
+      g.translate(cx + d.x * 0.026, cy + d.y * 0.022, cz + d.z * 0.026);
+      flowers.push(g);
+    }
+    for (let k = 0; k < 3; k++) {
+      const bud = new SphereGeometry(0.005, 6, 4);
+      bud.scale(1, 1.5, 1);
+      paint(bud, (_p, _n, _uv, o2) => o2.setRGB(0.35, 0.5, 0.2));
+      bud.translate(cx + rng.range(-0.02, 0.02), cy + 0.018, cz + rng.range(-0.02, 0.02));
+      flowers.push(bud);
     }
   }
-  return merge(parts);
+  return { leaves: merge(leaves), flowers: merge(flowers) };
+}
+
+let soilTex: { map: CanvasTexture; normalMap: CanvasTexture } | null = null;
+/** moist potting soil: dark loam, grit and perlite, a few pebbles and a little moss */
+function soilTextures() {
+  if (soilTex) return soilTex;
+  const N = 256;
+  const rng = new Rng(77);
+  const c = makeCanvas(N);
+  const ctx = c.getContext("2d")!;
+  const h = new Float32Array(N * N);
+  const img = ctx.createImageData(N, N);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const n = NOISE.noise(x * 0.06, y * 0.06, 2) * 0.5 + NOISE.noise(x * 0.25, y * 0.25, 3) * 0.35 + NOISE.noise(x * 0.9, y * 0.9, 4) * 0.2;
+      const k = (y * N + x) * 4;
+      const v = 0.75 + n * 0.35;
+      img.data[k] = 62 * v;
+      img.data[k + 1] = 44 * v;
+      img.data[k + 2] = 30 * v;
+      img.data[k + 3] = 255;
+      h[y * N + x] = 0.5 + n * 0.25;
+    }
+  ctx.putImageData(img, 0, 0);
+  const dot = (x: number, y: number, r: number, col: string, hh: number) => {
+    ctx.beginPath();
+    ctx.ellipse(x, y, r, r * rng.range(0.6, 1), rng.range(0, Math.PI), 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    for (let yy = Math.max(0, Math.floor(y - r)); yy < Math.min(N, y + r); yy++)
+      for (let xx = Math.max(0, Math.floor(x - r)); xx < Math.min(N, x + r); xx++) {
+        const d = Math.hypot(xx - x, yy - y) / r;
+        if (d < 1) h[yy * N + xx] = Math.max(h[yy * N + xx], 0.6 + hh * Math.sqrt(1 - d * d));
+      }
+  };
+  for (let i = 0; i < 420; i++) dot(rng.range(0, N), rng.range(0, N), rng.range(0.6, 1.6), rng.pick(["#2a1d14", "#5a4433", "#3a2a1e"]), 0.15);
+  for (let i = 0; i < 60; i++) dot(rng.range(0, N), rng.range(0, N), rng.range(0.8, 1.6), "#d9d4c8", 0.25); // perlite
+  for (let i = 0; i < 14; i++) dot(rng.range(0, N), rng.range(0, N), rng.range(2.5, 5), rng.pick(["#8a7d6a", "#a39684", "#6e6253"]), 0.5); // pebbles
+  for (let i = 0; i < 6; i++) dot(rng.range(0, N), rng.range(0, N), rng.range(3, 7), "rgba(70,92,40,0.55)", 0.05); // moss
+  soilTex = { map: toTexture(c, true, true, 4), normalMap: toTexture(heightToNormalCanvas(h, N, N, 2.2), false, true, 4) };
+  return soilTex;
+}
+
+/**
+ * The pool's dressed-stone rim: an exact octagon with crisp corners, a plinth course, a bullnose
+ * coping overhanging both faces, mortar joints between the blocks, a slightly different tint for
+ * every block, and grime where the stone meets the paving.
+ */
+function stoneRim(PR: number, marble: PBRSet | undefined): Mesh {
+  const prof: Array<[number, number]> = [
+    [PR - 0.2, 0], [PR + 0.075, 0], [PR + 0.075, 0.072], [PR + 0.095, 0.086], [PR + 0.095, 0.368],
+    [PR + 0.14, 0.38], [PR + 0.158, 0.404], [PR + 0.158, 0.432], [PR + 0.14, 0.456], [PR + 0.112, 0.465],
+    [PR - 0.122, 0.465], [PR - 0.15, 0.456], [PR - 0.166, 0.432], [PR - 0.164, 0.404], [PR - 0.146, 0.384], [PR - 0.135, 0.37], [PR - 0.135, 0.12],
+  ];
+  const oct = Math.PI / 4;
+  const g = lathe(prof, 128, 72, (out, a) => {
+    // circle → octagon, corners where the old 8-sided rim had them
+    const k = Math.cos(oct / 2) / Math.cos((((a % oct) + oct) % oct) - oct / 2);
+    out.x *= k;
+    out.z *= k;
+  });
+  const mat = marble ? pbr(marble, [8, 2], { color: new Color("#e9ddc8") }) : new MeshStandardMaterial({ color: "#c9b48e", roughness: 0.8 });
+  mat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vRimPos;\nvarying vec3 vRimN;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvRimPos = position;\nvRimN = objectNormal;");
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vRimPos;\nvarying vec3 vRimN;\nfloat rimHash(float n){ return fract(sin(n * 91.3458) * 47453.5453); }")
+      .replace(
+        "#include <map_fragment>",
+        `#include <map_fragment>
+        float rimJoint = 0.0;
+        {
+          float a = atan(vRimPos.z, vRimPos.x);
+          float r = length(vRimPos.xz);
+          float seg = 3.14159265 / 8.0; // two blocks per side
+          float f = a / seg;
+          float dj = abs(fract(f + 0.5) - 0.5) * seg * r; // to the nearest vertical joint (m)
+          float y = vRimPos.y;
+          bool vertical = abs(normalize(vRimN).y) < 0.6;
+          float dh = vertical ? min(abs(y - 0.08), abs(y - 0.372)) : 1.0; // bed joints on the faces
+          rimJoint = 1.0 - smoothstep(0.0022, 0.0045, min(dj, dh));
+          float course = y < 0.08 ? 0.0 : (y < 0.372 ? 1.0 : 2.0);
+          diffuseColor.rgb *= 0.92 + rimHash(floor(f) + course * 17.0) * 0.14;
+          diffuseColor.rgb *= mix(0.7, 1.0, smoothstep(0.0, 0.2, y));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.36, 0.33, 0.28), rimJoint * 0.85);
+        }`,
+      )
+      .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n  roughnessFactor = mix(roughnessFactor, 1.0, rimJoint);");
+  };
+  mat.customProgramCacheKey = () => "fm-stone-rim";
+  return new Mesh(g, mat);
 }
 
 function fishGeometry(): BufferGeometry {
@@ -255,10 +410,7 @@ export function buildFountain(o: FountainOptions) {
   const disposables: Array<{ dispose: () => void }> = [];
 
   // rim of marble, with a darker wet line where the water laps
-  const rim = new Mesh(
-    lathe([[PR - 0.2, 0], [PR + 0.05, 0], [PR + 0.12, 0.38], [PR + 0.12, 0.46], [PR - 0.12, 0.46], [PR - 0.14, 0.12]], 8, 4),
-    o.marble ? pbr(o.marble, [6, 1], { color: new Color("#e6dccb") }) : new MeshStandardMaterial({ color: "#9a7e5c", roughness: 0.8 }),
-  );
+  const rim = stoneRim(PR, o.marble);
   rim.castShadow = o.shadows;
   rim.receiveShadow = true;
   group.add(rim);
@@ -563,24 +715,55 @@ export function buildFountain(o: FountainOptions) {
   // ── clay pots of red geraniums on the rim corners (one corner is Khayyam's seat)
   const potScan = propScan("planter_pot_clay");
   const potSpots = [0, 1, 3, 4, 5, 7].map((k) => (k / 8) * Math.PI * 2);
+  // courtyard pots about 25 cm across; the soil sits a couple of centimetres below the lip
+  const RIM_TOP = 0.465, POT = 0.95;
+  let soilY = RIM_TOP + 0.05, soilR = 0.08;
   if (potScan) {
     const pots = new InstancedMesh(potScan.lods[0], potScan.material, potSpots.length);
+    potScan.lods[0].computeBoundingBox();
+    const bb = potScan.lods[0].boundingBox!;
+    const rOut = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) * 0.5 * POT;
+    soilY = RIM_TOP + (bb.max.y - bb.min.y) * POT - 0.022;
+    soilR = rOut * 0.8;
     potSpots.forEach((a, i) => {
-      m4.compose(new Vector3(Math.cos(a) * PR, 0.46, Math.sin(a) * PR), q.setFromAxisAngle(up, i * 1.3), new Vector3(0.62, 0.62, 0.62));
+      m4.compose(new Vector3(Math.cos(a) * PR, RIM_TOP - bb.min.y * POT, Math.sin(a) * PR), q.setFromAxisAngle(up, i * 1.3), new Vector3(POT, POT, POT));
       pots.setMatrixAt(i, m4);
     });
     pots.castShadow = o.shadows;
     pots.receiveShadow = true;
     group.add(pots);
   }
+  // the soil: a gently domed, lumpy disc of moist loam with grit
+  {
+    const sg = new CircleGeometry(1, 36);
+    const sp = sg.getAttribute("position");
+    for (let i = 0; i < sp.count; i++) {
+      const x = sp.getX(i), y = sp.getY(i), r = Math.hypot(x, y);
+      sp.setXYZ(i, x, y, (1 - r * r) * 0.12 + NOISE.noise(x * 4, y * 4, 9) * 0.05);
+    }
+    sg.rotateX(-Math.PI / 2);
+    sg.computeVertexNormals();
+    const st = soilTextures();
+    const soil = new InstancedMesh(sg, new MeshStandardMaterial({ map: st.map, normalMap: st.normalMap, normalScale: new Vector2(1.2, 1.2), roughness: 0.92, color: new Color("#8a7a6a") }), potSpots.length);
+    potSpots.forEach((a, i) => {
+      m4.compose(new Vector3(Math.cos(a) * PR, soilY, Math.sin(a) * PR), q.setFromAxisAngle(up, i * 0.7), new Vector3(soilR, soilR * 0.12, soilR));
+      soil.setMatrixAt(i, m4);
+    });
+    soil.receiveShadow = true;
+    group.add(soil);
+  }
   const plantGeo = geraniumGeometry(17);
-  const plants = new InstancedMesh(plantGeo, new MeshStandardMaterial({ vertexColors: true, roughness: 0.7, side: DoubleSide }), potSpots.length);
-  potSpots.forEach((a, i) => {
-    m4.compose(new Vector3(Math.cos(a) * PR, 0.46 + (potScan ? 0.12 : 0.05), Math.sin(a) * PR), q.setFromAxisAngle(up, i * 2.1), new Vector3(1, 1, 1).multiplyScalar(0.95 + (i % 3) * 0.07));
-    plants.setMatrixAt(i, m4);
-  });
-  plants.castShadow = o.shadows;
-  group.add(plants);
+  const leafMat = new MeshStandardMaterial({ map: geraniumLeafTexture(), vertexColors: true, roughness: 0.62, side: DoubleSide });
+  const flowerMat = new MeshStandardMaterial({ vertexColors: true, roughness: 0.55, side: DoubleSide });
+  for (const [geo, mat] of [[plantGeo.leaves, leafMat], [plantGeo.flowers, flowerMat]] as Array<[BufferGeometry, Material]>) {
+    const plants = new InstancedMesh(geo, mat, potSpots.length);
+    potSpots.forEach((a, i) => {
+      m4.compose(new Vector3(Math.cos(a) * PR, soilY + 0.004, Math.sin(a) * PR), q.setFromAxisAngle(up, i * 2.1), new Vector3(1, 1, 1).multiplyScalar(1.05 + (i % 3) * 0.08));
+      plants.setMatrixAt(i, m4);
+    });
+    plants.castShadow = o.shadows;
+    group.add(plants);
+  }
 
   let lastT = 0;
   return {

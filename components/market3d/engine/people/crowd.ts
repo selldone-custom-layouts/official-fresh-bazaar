@@ -157,7 +157,7 @@ export class Crowd {
     });
 
     // shoppers — a calm, believable number of people
-    const n = o.quality === "low" ? 5 : o.quality === "medium" ? 7 : 9;
+    const n = o.quality === "low" ? 4 : o.quality === "medium" ? 6 : 7;
     for (let i = 0; i < n; i++) {
       const b = o.make("walker", i);
       const a = rng.range(-Math.PI, Math.PI);
