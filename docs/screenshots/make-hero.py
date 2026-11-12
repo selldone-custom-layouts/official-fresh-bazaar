@@ -13,7 +13,12 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 src_render, src_real, out = sys.argv[1:4]
 W, H = 2400, 1350
 render = Image.open(src_render).convert("RGB").resize((W, H), Image.LANCZOS)
-real = Image.open(src_real).convert("RGB").resize((W, H), Image.LANCZOS)
+# "-" = no photoreal frame yet: the right half shows the same render, slightly veiled, as the goal
+real = (
+    Image.open(src_real).convert("RGB").resize((W, H), Image.LANCZOS)
+    if src_real != "-"
+    else Image.blend(render, Image.new("RGB", (W, H), (236, 226, 206)), 0.18)
+)
 
 # left half: render; right half: photoreal, joined by a soft diagonal-free vertical seam
 mask = Image.new("L", (W, H), 0)
@@ -46,7 +51,7 @@ pill((48, 44), "Today: real-time 3D in the browser", font(46))
 pill((W // 2 + 48, 44), "The goal: indistinguishable from a photo", font(46))
 
 # arrow across the seam, left → right
-cy = H // 2 + 180
+cy = int(H * 0.31)
 x0, x1 = W // 2 - 300, W // 2 + 300
 d.line([(x0, cy), (x1 - 40, cy)], fill=(255, 214, 120, 255), width=16)
 d.polygon([(x1, cy), (x1 - 70, cy - 46), (x1 - 70, cy + 46)], fill=(255, 214, 120, 255))
