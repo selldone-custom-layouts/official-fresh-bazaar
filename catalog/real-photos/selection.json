@@ -1,0 +1,1138 @@
+{
+ "red-apple": {
+  "main": {
+   "src": [
+    15,
+    9,
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ]
+   },
+   {
+    "src": [
+     22
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     19
+    ]
+   }
+  ]
+ },
+ "pear": {
+  "main": {
+   "src": [
+    4
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ]
+   },
+   {
+    "src": [
+     8
+    ]
+   },
+   {
+    "src": [
+     14
+    ]
+   }
+  ]
+ },
+ "peach": {
+  "main": {
+   "src": [
+    2
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     21
+    ]
+   },
+   {
+    "src": [
+     28
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "plum": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     5
+    ]
+   },
+   {
+    "src": [
+     24
+    ]
+   },
+   {
+    "src": [
+     6
+    ]
+   }
+  ]
+ },
+ "cherry": {
+  "main": {
+   "src": [
+    4,
+    19,
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     12
+    ]
+   },
+   {
+    "src": [
+     21
+    ]
+   },
+   {
+    "src": [
+     4
+    ]
+   }
+  ]
+ },
+ "orange": {
+  "main": {
+   "src": [
+    7
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     11
+    ]
+   },
+   {
+    "src": [
+     3
+    ]
+   },
+   {
+    "src": [
+     4
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "tangerine": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     {
+      "i": 9,
+      "crop": [
+       0,
+       0,
+       0.93,
+       1
+      ]
+     }
+    ]
+   },
+   {
+    "src": [
+     14
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     1
+    ]
+   }
+  ]
+ },
+ "lemon": {
+  "main": {
+   "src": [
+    3
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     2
+    ]
+   },
+   {
+    "src": [
+     11
+    ]
+   },
+   {
+    "src": [
+     31
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "lime": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ]
+   },
+   {
+    "src": [
+     18
+    ]
+   },
+   {
+    "src": [
+     11
+    ]
+   }
+  ]
+ },
+ "banana": {
+  "main": {
+   "src": [
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     0
+    ]
+   },
+   {
+    "src": [
+     2
+    ]
+   },
+   {
+    "src": [
+     8
+    ]
+   }
+  ]
+ },
+ "pineapple": {
+  "main": {
+   "src": [
+    2
+   ],
+   "box": 1.18
+  },
+  "gallery": [
+   {
+    "src": [
+     8
+    ],
+    "box": 1.18
+   },
+   {
+    "src": [
+     40
+    ],
+    "box": 1.18
+   }
+  ]
+ },
+ "mango": {
+  "main": {
+   "src": [
+    28
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     0
+    ]
+   },
+   {
+    "src": [
+     27
+    ]
+   },
+   {
+    "src": [
+     29
+    ]
+   }
+  ]
+ },
+ "kiwi": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     4
+    ]
+   },
+   {
+    "src": [
+     21
+    ]
+   },
+   {
+    "src": [
+     17
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "strawberry": {
+  "main": {
+   "src": [
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     0
+    ]
+   },
+   {
+    "src": [
+     20
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     23
+    ]
+   }
+  ]
+ },
+ "red-grapes": {
+  "main": {
+   "src": [
+    24
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     6
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     5
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "green-grapes": {
+  "main": {
+   "src": [
+    4
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     3
+    ]
+   },
+   {
+    "src": [
+     33
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     32
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "pomegranate": {
+  "main": {
+   "src": [
+    31
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     0
+    ]
+   },
+   {
+    "src": [
+     32
+    ]
+   },
+   {
+    "src": [
+     14
+    ]
+   }
+  ]
+ },
+ "cantaloupe": {
+  "main": {
+   "src": [
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     5
+    ]
+   }
+  ]
+ },
+ "avocado": {
+  "main": {
+   "src": [
+    5
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     11
+    ]
+   },
+   {
+    "src": [
+     17
+    ]
+   },
+   {
+    "src": [
+     28
+    ]
+   }
+  ]
+ },
+ "tomato": {
+  "main": {
+   "src": [
+    1
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     9
+    ]
+   },
+   {
+    "src": [
+     22
+    ]
+   },
+   {
+    "src": [
+     34
+    ]
+   }
+  ]
+ },
+ "cucumber": {
+  "main": {
+   "src": [
+    {
+     "i": 5,
+     "largest": true
+    }
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     {
+      "i": 2,
+      "rot": 28
+     }
+    ]
+   },
+   {
+    "src": [
+     15
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     4
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "zucchini": {
+  "main": {
+   "src": [
+    31
+   ],
+   "mode": "top"
+  },
+  "gallery": [
+   {
+    "src": [
+     35
+    ]
+   },
+   {
+    "src": [
+     36
+    ]
+   },
+   {
+    "src": [
+     29
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "eggplant": {
+  "main": {
+   "src": [
+    24
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     2
+    ]
+   },
+   {
+    "src": [
+     4
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "red-pepper": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     64
+    ]
+   },
+   {
+    "src": [
+     59
+    ]
+   }
+  ]
+ },
+ "chili": {
+  "main": {
+   "src": [
+    13
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     30
+    ]
+   },
+   {
+    "src": [
+     26
+    ]
+   }
+  ]
+ },
+ "potato": {
+  "main": {
+   "src": [
+    12
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     22
+    ]
+   },
+   {
+    "src": [
+     23
+    ]
+   },
+   {
+    "src": [
+     37
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "onion": {
+  "main": {
+   "src": [
+    25
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     4
+    ]
+   },
+   {
+    "src": [
+     14
+    ]
+   },
+   {
+    "src": [
+     13
+    ]
+   }
+  ]
+ },
+ "red-onion": {
+  "main": {
+   "src": [
+    "onion:15",
+    "onion:21"
+   ],
+   "layout": "pair"
+  },
+  "gallery": [
+   {
+    "src": [
+     "onion:10"
+    ]
+   },
+   {
+    "src": [
+     "onion:8"
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     "onion:6"
+    ]
+   }
+  ]
+ },
+ "ginger": {
+  "main": {
+   "src": [
+    5
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     7
+    ]
+   },
+   {
+    "src": [
+     8
+    ]
+   }
+  ]
+ },
+ "pumpkin": {
+  "main": {
+   "src": [
+    44
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     37
+    ]
+   },
+   {
+    "src": [
+     30
+    ]
+   }
+  ]
+ },
+ "fig": {
+  "main": {
+   "src": [
+    53
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     17
+    ]
+   },
+   {
+    "src": [
+     1
+    ]
+   }
+  ]
+ },
+ "cabbage": {
+  "main": {
+   "src": [
+    9
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     23
+    ]
+   },
+   {
+    "src": [
+     38
+    ]
+   }
+  ]
+ },
+ "broccoli": {
+  "main": {
+   "src": [
+    36
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     38
+    ]
+   },
+   {
+    "src": [
+     53
+    ]
+   },
+   {
+    "src": [
+     37
+    ]
+   }
+  ]
+ },
+ "cauliflower": {
+  "main": {
+   "src": [
+    24
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     25
+    ]
+   },
+   {
+    "src": [
+     23
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "watermelon": {
+  "main": {
+   "src": [
+    13
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     36
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     6
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "corn": {
+  "main": {
+   "src": [
+    0
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     42
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "apricot": {
+  "main": {
+   "src": [
+    4,
+    2
+   ],
+   "layout": "pair"
+  },
+  "gallery": [
+   {
+    "src": [
+     0
+    ]
+   },
+   {
+    "src": [
+     2
+    ]
+   }
+  ]
+ },
+ "mint": {
+  "main": {
+   "src": [
+    2
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     10
+    ]
+   }
+  ]
+ },
+ "garlic": {
+  "main": {
+   "src": [
+    2
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     34
+    ]
+   },
+   {
+    "src": [
+     36
+    ]
+   },
+   {
+    "src": [
+     10
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "mushroom": {
+  "main": {
+   "src": [
+    19
+   ],
+   "mode": "top"
+  },
+  "gallery": [
+   {
+    "src": [
+     17
+    ]
+   }
+  ]
+ },
+ "radish": {
+  "main": {
+   "src": [
+    15
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     30
+    ]
+   },
+   {
+    "src": [
+     13
+    ]
+   }
+  ]
+ },
+ "leek": {
+  "main": {
+   "src": [
+    2
+   ],
+   "mode": "top"
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ]
+   }
+  ]
+ },
+ "green-apple": {
+  "main": {
+   "src": [
+    16
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ]
+   },
+   {
+    "src": [
+     2
+    ]
+   },
+   {
+    "src": [
+     38
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "lettuce": {
+  "main": {
+   "src": [
+    31
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     24
+    ]
+   }
+  ]
+ },
+ "celery": {
+  "main": {
+   "src": [
+    24
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     37
+    ]
+   },
+   {
+    "src": [
+     23
+    ]
+   }
+  ]
+ },
+ "yellow-pepper": {
+  "main": {
+   "src": [
+    21
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     7
+    ]
+   },
+   {
+    "src": [
+     1
+    ]
+   }
+  ]
+ },
+ "green-pepper": {
+  "main": {
+   "src": [
+    13
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     2
+    ]
+   }
+  ]
+ },
+ "carrot": {
+  "main": {
+   "src": [
+    2
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     14
+    ]
+   },
+   {
+    "src": [
+     4
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "parsley": {
+  "main": {
+   "src": [
+    14
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     21
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "basil": {
+  "main": {
+   "src": [
+    24
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     21
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "dill": {
+  "main": {
+   "src": [
+    20
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     18
+    ],
+    "mode": "top"
+   }
+  ]
+ },
+ "cilantro": {
+  "main": {
+   "src": [
+    20
+   ],
+   "mode": "top"
+  },
+  "gallery": [
+   {
+    "src": [
+     1
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     12
+    ]
+   }
+  ]
+ },
+ "spinach": {
+  "main": {
+   "src": [
+    96
+   ]
+  },
+  "gallery": [
+   {
+    "src": [
+     85
+    ],
+    "mode": "top"
+   },
+   {
+    "src": [
+     93
+    ],
+    "mode": "top"
+   }
+  ]
+ }
+}

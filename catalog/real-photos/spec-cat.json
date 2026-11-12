@@ -1,0 +1,86 @@
+{
+ "cat-orchard": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "pear:8",
+    "red-apple:15",
+    "green-apple:2",
+    "cherry:4",
+    "apricot:2"
+   ]
+  }
+ },
+ "cat-citrus": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "orange:11",
+    "pineapple:2",
+    "banana:2",
+    "lemon:2",
+    "lime:1"
+   ]
+  }
+ },
+ "cat-berries": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "cantaloupe:1",
+    "red-grapes:24",
+    "pomegranate:0",
+    "strawberry:1",
+    "watermelon:13"
+   ]
+  }
+ },
+ "cat-garden": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "eggplant:2",
+    "red-pepper:68",
+    "zucchini:35",
+    "tomato:1",
+    "chili:13"
+   ]
+  }
+ },
+ "cat-roots": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "onion:4",
+    "carrot:2",
+    "onion:15",
+    "potato:22",
+    "garlic:2"
+   ]
+  }
+ },
+ "cat-greens": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "cabbage:9",
+    "cauliflower:24",
+    "broccoli:36",
+    "corn:0",
+    "mushroom:17"
+   ]
+  }
+ },
+ "cat-herbs": {
+  "category": {
+   "layout": "five",
+   "src": [
+    "dill:20",
+    "parsley:14",
+    "spinach:96",
+    "mint:2",
+    "basil:24"
+   ]
+  }
+ }
+}

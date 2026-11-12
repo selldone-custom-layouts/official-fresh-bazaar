@@ -65,7 +65,8 @@ Dev-only helpers: `?market-demo` shows every 3D model with a demo catalog, `?mar
 | Converted assets (+ licences/credits) | `components/market3d/assets/{people,env}/` |
 | Avatar / animation converter | `catalog/people-pipeline/` |
 | Soundscape (fountain, murmur, santur in Shur) | `components/market3d/engine/audio/ambience.ts` |
-| Product photo studio (renders catalog photos from the 3D models) | `catalog/studio/` |
+| Real product & category photos (real photographs → cutout → shared cream studio backdrop; credits) | `catalog/real-photos/` |
+| Legacy photo studio (renders catalog photos from the 3D models) | `catalog/studio/` |
 | Fresh Bazaar catalog plan (7 categories, 53 products, EN + FA) | `catalog/catalog-plan.json` |
 
 Routing: `/` renders the market for shop / landing homes (blog, community, map homes are unchanged),

@@ -126,6 +126,7 @@ Dev-only helpers:
 | People: avatars, motion capture, costume, crowd behaviour | `components/market3d/engine/people/` |
 | Soundscape | `components/market3d/engine/audio/ambience.ts` |
 | Asset pipeline (avatars, animations, scans) | `catalog/people-pipeline/` |
+| Real product and category photos for the demo shop (cutout + shared studio backdrop) | [`catalog/real-photos/`](catalog/real-photos/README.md) |
 | Engineering notes | [`FRESH-MARKET-3D.md`](FRESH-MARKET-3D.md) |
 
 ## Credits
@@ -133,5 +134,6 @@ Dev-only helpers:
 - **Storefront:** built on [selldone/storefront](https://github.com/selldone/storefront) ([licence](LICENSE.md)). Selldone's original README is kept as [`README.selldone.md`](README.selldone.md).
 - **People and motion capture:** the [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) avatar library (MIT), see [`LICENSE-Rocketbox.txt`](components/market3d/assets/people/LICENSE-Rocketbox.txt).
 - **Photo-scanned produce, props, materials and the HDR sky:** [Poly Haven](https://polyhaven.com) (CC0), see [`CREDITS.txt`](components/market3d/assets/env/CREDITS.txt).
+- **Demo-shop product and category photos:** real photographs from Wikimedia Commons and Openverse (CC0, public domain, CC BY, CC BY-SA), see [`catalog/real-photos/CREDITS.md`](catalog/real-photos/CREDITS.md).
 - **Verses:** the Persian texts are classical and in the public domain. Lines traditionally attributed to a figure are labelled as attributed, and the English renderings are our own.
 - **Everything else:** the architecture, produce and soundscape are procedural, generated in code at runtime.
