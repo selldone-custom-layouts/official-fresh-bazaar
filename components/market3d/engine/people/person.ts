@@ -11,7 +11,7 @@
  */
 import { AnimationAction, AnimationMixer, Bone, Group, LoopOnce, LoopRepeat, MathUtils, Quaternion, SkinnedMesh, Vector3 } from "three";
 import { AvatarAsset, AvatarInfo, CLIPS, ClipRole, PeopleLibrary } from "./library";
-import type { Costume } from "./costume";
+import type { Costume, CostumeHandle } from "./costume";
 
 export interface PersonOptions {
   /** override clip lists (e.g. seated idles) */
@@ -76,11 +76,13 @@ export class Person {
   private acc = 0;
 
   private extra: SkinnedMesh[] = [];
+  private costume: CostumeHandle | null = null;
   private set: Record<ClipRole, string[]>;
 
   constructor(private lib: PeopleLibrary, id: string, opts: PersonOptions = {}) {
     const inst = lib.instance(id, opts.costume);
     this.extra = inst.extra;
+    this.costume = inst.costume;
     this.root = inst.root;
     this.mesh = inst.mesh;
     const asset = inst.asset;
@@ -224,6 +226,8 @@ export class Person {
 
     this.mixer.update(dt);
     this.updateLook(dt);
+    // keep garments outside the limbs for this exact pose
+    this.costume?.update();
   }
 
   private updateLook(dt: number) {

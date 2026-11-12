@@ -45,6 +45,7 @@ import { Character, Outfit } from "./people/characters";
 import { loadEnvAssets } from "./market/realism";
 import { disposeScans, loadScans, propScan, PropId } from "./produce/scans";
 import { FIGURES } from "../data/figures";
+import { WARDROBE } from "../data/wardrobe";
 import { CylinderGeometry as FigureHitGeometry, Mesh as FigureHitMesh, MeshBasicMaterial as FigureHitMaterial } from "three";
 import { Ambience } from "./audio/ambience";
 import { Birds } from "./market/birds";
@@ -864,7 +865,8 @@ export class MarketEngine {
     const lib = real && this.people && this.people.avatars.size ? this.people : null;
     const VENDORS = ROSTER.filter((a) => a.role === "vendor").map((a) => a.id);
     // walkers 0+1 (mother and child) and 4+5 (a couple) walk together
-    const WALKERS = ["Female_Adult_05", "Male_Child_01", "Male_Adult_17", "Female_Adult_03", "Male_Adult_07", "Female_Adult_02", "Female_Adult_15", "Female_Adult_07", "Male_Adult_17"];
+    // every walker is a different person (no repeated faces or outfits)
+    const WALKERS = ["Female_Adult_05", "Male_Child_01", "Female_Adult_03", "Male_Adult_07", "Female_Adult_02", "Female_Adult_15", "Female_Adult_07"];
     const CHATTERS = ["Male_Adult_03", "Male_Adult_02"];
     const V_OUT: Outfit[] = ["man-qaba", "man-vest", "elder", "woman-scarf", "man-vest", "woman-qashqai"];
     const S_OUT: Outfit[] = ["woman-qashqai", "man-qaba", "woman-scarf", "man-vest", "elder", "woman-scarf", "man-qaba", "woman-qashqai"];
@@ -904,7 +906,7 @@ export class MarketEngine {
         const list = (kind === "vendor" ? VENDORS : kind === "walker" ? WALKERS : CHATTERS).filter((id) => lib.avatars.has(id));
         const any = [...lib.avatars.keys()];
         const id = list.length ? list[i % list.length] : any[i % any.length];
-        return new Person(lib, id);
+        return new Person(lib, id, { costume: WARDROBE[id] });
       }
       const outfit = kind === "vendor" ? V_OUT[i % V_OUT.length] : S_OUT[(i + (kind === "chatter" ? 3 : 0)) % S_OUT.length];
       return new Character({ outfit, seed: (kind === "vendor" ? 100 : kind === "walker" ? 300 : 900) + i * 7 });

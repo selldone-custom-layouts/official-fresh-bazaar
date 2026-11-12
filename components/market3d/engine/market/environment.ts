@@ -32,6 +32,9 @@ import {
   Euler,
   ShaderMaterial,
   BackSide,
+  AdditiveBlending,
+  DataTexture,
+  DataUtils,
 } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { displace, merge, paint, transformed } from "../util/geo";
@@ -158,6 +161,83 @@ function skyDome(sunDir: Vector3): Mesh {
   return mesh;
 }
 
+/**
+ * The captured sky with its sun clipped. A 1k HDR stores the sun in two or three texels of enormous
+ * value; magnified and bloomed they become a white ball the size of a dome. We clip the sky to a
+ * believable peak and draw the sun ourselves (see `sunDisc`).
+ */
+function clippedSky(src: DataTexture, peak: number): DataTexture {
+  const img = src.image as { data: Float32Array | Uint16Array; width: number; height: number };
+  const half = img.data instanceof Uint16Array;
+  const data = img.data.slice() as Float32Array | Uint16Array;
+  const n = img.width * img.height, ch = data.length / n;
+  const hPeak = half ? DataUtils.toHalfFloat(peak) : peak;
+  const get = (k: number) => (half ? DataUtils.fromHalfFloat(data[k]) : data[k]);
+  const set = (k: number, v: number) => (data[k] = half ? DataUtils.toHalfFloat(v) : v);
+  for (let i = 0; i < n; i++) {
+    const k = i * ch;
+    // positive half floats sort like integers, so most texels are skipped without decoding
+    if (data[k] <= hPeak && data[k + 1] <= hPeak && data[k + 2] <= hPeak) continue;
+    const r = get(k), g = get(k + 1), b = get(k + 2);
+    const sc = peak / Math.max(r, g, b);
+    set(k, r * sc);
+    set(k + 1, g * sc);
+    set(k + 2, b * sc);
+  }
+  const t = new DataTexture(data, img.width, img.height, src.format as any, src.type, src.mapping as any, src.wrapS, src.wrapT, src.magFilter, src.minFilter);
+  t.colorSpace = src.colorSpace;
+  t.flipY = src.flipY;
+  t.generateMipmaps = src.generateMipmaps;
+  t.needsUpdate = true;
+  return t;
+}
+
+/**
+ * The sun as a camera would see it: a small limb-darkened disc (0.53° across in reality; drawn a
+ * little larger so it survives the screen resolution) with forward-scattering haze (Mie) around it.
+ * The disc is bright enough for the bloom pass to add a natural glare — and no more.
+ */
+function sunDisc(sunDir: Vector3): Mesh {
+  const m = new ShaderMaterial({
+    side: BackSide,
+    depthWrite: false,
+    depthTest: true,
+    transparent: true,
+    blending: AdditiveBlending,
+    fog: false,
+    toneMapped: true,
+    uniforms: { sunDir: { value: sunDir.clone().normalize() } },
+    vertexShader: `varying vec3 vWorld;
+      void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vWorld = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; gl_Position.z = gl_Position.w; }`,
+    fragmentShader: `uniform vec3 sunDir; varying vec3 vWorld;
+      void main(){
+        vec3 d = normalize(vWorld - cameraPosition);
+        float c = dot(d, sunDir);
+        float ang = acos(clamp(c, -1.0, 1.0));
+        const float R = 0.0068; // disc radius (rad)
+        float x = clamp(ang / R, 0.0, 1.0);
+        float mu = sqrt(max(1.0 - x * x, 0.0));
+        float limb = 1.0 - 0.6 * (1.0 - mu) - 0.2 * (1.0 - mu) * (1.0 - mu);
+        float disc = (1.0 - smoothstep(0.86, 1.0, ang / R)) * limb;
+        vec3 col = vec3(1.0, 0.95, 0.86) * disc * 26.0;
+        // aureole: tight forward-scattering glow, then a broad warm haze
+        float s = max(c, 0.0);
+        col += vec3(1.0, 0.9, 0.74) * (pow(s, 9000.0) * 2.2 + pow(s, 900.0) * 0.55 + pow(s, 60.0) * 0.07);
+        if (max(col.r, max(col.g, col.b)) < 0.002) discard;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  });
+  const mesh = new Mesh(new SphereGeometry(900, 32, 16), m);
+  mesh.renderOrder = -9;
+  mesh.frustumCulled = false;
+  // keep the sky shell centred on the viewer
+  mesh.onBeforeRender = (_r, _s, cam) => {
+    mesh.position.copy(cam.position);
+    mesh.updateMatrixWorld();
+  };
+  return mesh;
+}
+
 function bench(): BufferGeometry {
   const parts: BufferGeometry[] = [];
   for (let i = 0; i < 3; i++) parts.push(transformed(new BoxGeometry(1.6, 0.04, 0.11), [0, 0.45, -0.13 + i * 0.13]));
@@ -236,14 +316,17 @@ export function buildEnvironment(scene: Scene, renderer: WebGLRenderer, o: EnvOp
   if (hdrSun && EA?.hdr) {
     // real captured sky: lighting, reflections and the visible sky all come from the HDR
     const rot = MathUtils.degToRad(azimuth) - Math.atan2(hdrSun.x, hdrSun.z);
-    envRT = pmrem.fromEquirectangular(EA.hdr);
+    // the directional light already carries the sun; the IBL keeps only a softened sun so glazed
+    // tile and water don't mirror a second, blinding one
+    envRT = pmrem.fromEquirectangular(clippedSky(EA.hdr, 30));
     scene.environment = envRT.texture;
-    (scene as any).environmentIntensity = 0.62;
+    (scene as any).environmentIntensity = 0.8;
     (scene as any).environmentRotation?.set(0, rot, 0);
-    scene.background = EA.hdr;
+    scene.background = clippedSky(EA.hdr, 6);
     (scene as any).backgroundRotation?.set(0, rot, 0);
     (scene as any).backgroundIntensity = 0.82;
     scene.fog = new Fog(new Color("#b9c2cc"), R + 30, R + 220);
+    group.add(sunDisc(sunDir));
   } else {
     envRT = pmrem.fromScene(skyScene, 0.02);
     scene.environment = envRT.texture;
